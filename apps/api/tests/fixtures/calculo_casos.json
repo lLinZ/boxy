@@ -1,0 +1,126 @@
+[
+  {
+    "nombre": "Venta simple pagada en bolívares (IVA 8 % y 16 %)",
+    "tasa": 36.5,
+    "cobra_igtf": true,
+    "promociones": [],
+    "lineas": [
+      { "producto_id": 1, "categoria_id": 1, "descripcion": "Harina 1Kg", "cantidad": 2, "precio_unitario_usd": 1.1, "tipo_iva": "reducido" },
+      { "producto_id": 2, "categoria_id": 2, "descripcion": "Refresco 2L", "cantidad": 1, "precio_unitario_usd": 1.8, "tipo_iva": "general" }
+    ],
+    "pagos": [{ "metodo": "efectivo_bs", "moneda": "VES", "monto": 163.16 }],
+    "esperado": {
+      "subtotal_usd": 4.0, "descuento_usd": 0, "iva_usd": 0.47, "igtf_usd": 0, "total_usd": 4.47,
+      "total_bs": 163.16, "vuelto_usd": 0, "faltante_usd": 0, "cubierto": true,
+      "lineas": [{ "iva_usd": 0.18, "total_usd": 2.38 }, { "iva_usd": 0.29, "total_usd": 2.09 }]
+    }
+  },
+  {
+    "nombre": "Billete grande en dólares: IGTF solo sobre lo que cancela, el resto es vuelto",
+    "tasa": 36.5,
+    "cobra_igtf": true,
+    "promociones": [],
+    "lineas": [{ "producto_id": 3, "categoria_id": 1, "descripcion": "Pan", "cantidad": 1, "precio_unitario_usd": 10, "tipo_iva": "exento" }],
+    "pagos": [{ "metodo": "efectivo_usd", "moneda": "USD", "monto": 20 }],
+    "esperado": { "igtf_usd": 0.3, "total_usd": 10.3, "pagado_usd": 20, "vuelto_usd": 9.7, "faltante_usd": 0, "cubierto": true,
+      "pagos": [{ "aplicado_usd": 10, "igtf_usd": 0.3 }] }
+  },
+  {
+    "nombre": "Pago mixto: primero los bolívares, las divisas cubren el resto",
+    "tasa": 36.5,
+    "cobra_igtf": true,
+    "promociones": [],
+    "lineas": [{ "producto_id": 3, "categoria_id": 1, "descripcion": "Pan", "cantidad": 1, "precio_unitario_usd": 10, "tipo_iva": "exento" }],
+    "pagos": [
+      { "metodo": "efectivo_bs", "moneda": "VES", "monto": 200 },
+      { "metodo": "efectivo_usd", "moneda": "USD", "monto": 5 }
+    ],
+    "esperado": { "igtf_usd": 0.14, "total_usd": 10.14, "pagado_usd": 10.48, "vuelto_usd": 0.34, "cubierto": true,
+      "pagos": [{ "aplicado_usd": 5.48, "igtf_usd": 0 }, { "aplicado_usd": 4.52, "igtf_usd": 0.14 }] }
+  },
+  {
+    "nombre": "Pago insuficiente: indica lo que falta (antes de IGTF)",
+    "tasa": 36.5,
+    "cobra_igtf": true,
+    "promociones": [],
+    "lineas": [{ "producto_id": 3, "categoria_id": 1, "descripcion": "Pan", "cantidad": 1, "precio_unitario_usd": 10, "tipo_iva": "exento" }],
+    "pagos": [{ "metodo": "efectivo_usd", "moneda": "USD", "monto": 5 }],
+    "esperado": { "igtf_usd": 0.15, "total_usd": 10.15, "pagado_usd": 5, "vuelto_usd": 0, "faltante_usd": 5.15, "cubierto": false }
+  },
+  {
+    "nombre": "Empresa que no es agente de IGTF: dólares sin recargo",
+    "tasa": 36.5,
+    "cobra_igtf": false,
+    "promociones": [],
+    "lineas": [{ "producto_id": 3, "categoria_id": 1, "descripcion": "Pan", "cantidad": 1, "precio_unitario_usd": 10, "tipo_iva": "exento" }],
+    "pagos": [{ "metodo": "efectivo_usd", "moneda": "USD", "monto": 20 }],
+    "esperado": { "igtf_usd": 0, "total_usd": 10, "vuelto_usd": 10, "cubierto": true }
+  },
+  {
+    "nombre": "Promoción de porcentaje sobre un producto",
+    "tasa": 40,
+    "cobra_igtf": true,
+    "promociones": [{ "id": 7, "tipo": "porcentaje", "producto_id": 4, "categoria_id": null, "valor": 10, "cantidad_minima": 1 }],
+    "lineas": [{ "producto_id": 4, "categoria_id": 2, "descripcion": "Jabón", "cantidad": 3, "precio_unitario_usd": 1, "tipo_iva": "general" }],
+    "pagos": [{ "metodo": "pago_movil", "moneda": "VES", "monto": 125.2 }],
+    "esperado": { "subtotal_usd": 3, "descuento_usd": 0.3, "promocion_usd": 0.3, "base_imponible_usd": 2.7, "iva_usd": 0.43, "total_usd": 3.13, "cubierto": true,
+      "lineas": [{ "promocion_usd": 0.3, "promocion_id": 7, "total_usd": 3.13 }] }
+  },
+  {
+    "nombre": "Lleva 3 paga 2 gana a un 20 % cuando descuenta más",
+    "tasa": 40,
+    "cobra_igtf": true,
+    "promociones": [
+      { "id": 8, "tipo": "porcentaje", "producto_id": 5, "categoria_id": null, "valor": 20, "cantidad_minima": 1 },
+      { "id": 9, "tipo": "nxm", "producto_id": 5, "categoria_id": null, "valor": 0, "lleva": 3, "paga": 2, "cantidad_minima": 1 }
+    ],
+    "lineas": [{ "producto_id": 5, "categoria_id": 3, "descripcion": "Galleta", "cantidad": 7, "precio_unitario_usd": 0.5, "tipo_iva": "exento" }],
+    "pagos": [{ "metodo": "efectivo_bs", "moneda": "VES", "monto": 100 }],
+    "esperado": { "subtotal_usd": 3.5, "descuento_usd": 1, "total_usd": 2.5, "cubierto": true,
+      "lineas": [{ "promocion_usd": 1, "promocion_id": 9, "total_usd": 2.5 }] }
+  },
+  {
+    "nombre": "Precio especial por cantidad (al mayor) desde 6 unidades",
+    "tasa": 40,
+    "cobra_igtf": true,
+    "promociones": [{ "id": 10, "tipo": "precio_cantidad", "producto_id": 6, "categoria_id": null, "valor": 1.8, "cantidad_minima": 6 }],
+    "lineas": [
+      { "producto_id": 6, "categoria_id": 1, "descripcion": "Arroz", "cantidad": 6, "precio_unitario_usd": 2, "tipo_iva": "reducido" },
+      { "producto_id": 6, "categoria_id": 1, "descripcion": "Arroz (suelto)", "cantidad": 5, "precio_unitario_usd": 2, "tipo_iva": "reducido" }
+    ],
+    "pagos": [{ "metodo": "efectivo_bs", "moneda": "VES", "monto": 1000 }],
+    "esperado": { "cubierto": true,
+      "lineas": [
+        { "promocion_usd": 1.2, "promocion_id": 10, "base_usd": 10.8, "iva_usd": 0.86, "total_usd": 11.66 },
+        { "promocion_usd": 0, "promocion_id": null, "base_usd": 10, "iva_usd": 0.8, "total_usd": 10.8 }
+      ] }
+  },
+  {
+    "nombre": "El descuento manual nunca deja la línea en negativo",
+    "tasa": 40,
+    "cobra_igtf": true,
+    "promociones": [{ "id": 11, "tipo": "porcentaje", "producto_id": null, "categoria_id": 3, "valor": 10, "cantidad_minima": 1 }],
+    "lineas": [{ "producto_id": 7, "categoria_id": 3, "descripcion": "Café", "cantidad": 1, "precio_unitario_usd": 5, "tipo_iva": "general", "descuento_usd": 6 }],
+    "pagos": [{ "metodo": "efectivo_bs", "moneda": "VES", "monto": 1 }],
+    "esperado": { "descuento_usd": 5, "total_usd": 0, "vuelto_usd": 0.03, "cubierto": true,
+      "lineas": [{ "promocion_usd": 0.5, "descuento_manual_usd": 4.5, "base_usd": 0, "total_usd": 0 }] }
+  },
+  {
+    "nombre": "Fiado (crédito) no genera IGTF",
+    "tasa": 36.5,
+    "cobra_igtf": true,
+    "promociones": [],
+    "lineas": [{ "producto_id": 3, "categoria_id": 1, "descripcion": "Pan", "cantidad": 1, "precio_unitario_usd": 10, "tipo_iva": "exento" }],
+    "pagos": [{ "metodo": "credito", "moneda": "USD", "monto": 10 }],
+    "esperado": { "igtf_usd": 0, "total_usd": 10, "vuelto_usd": 0, "cubierto": true, "pagos": [{ "aplica_igtf": false, "aplicado_usd": 10 }] }
+  },
+  {
+    "nombre": "Producto pesable: 0,350 kg",
+    "tasa": 36.5,
+    "cobra_igtf": true,
+    "promociones": [],
+    "lineas": [{ "producto_id": 8, "categoria_id": 4, "descripcion": "Queso blanco", "cantidad": 0.35, "precio_unitario_usd": 6.4, "tipo_iva": "exento" }],
+    "pagos": [{ "metodo": "efectivo_usd", "moneda": "USD", "monto": 2.31 }],
+    "esperado": { "subtotal_usd": 2.24, "igtf_usd": 0.07, "total_usd": 2.31, "vuelto_usd": 0, "cubierto": true }
+  }
+]

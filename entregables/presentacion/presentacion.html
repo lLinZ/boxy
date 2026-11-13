@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Boxy &middot; Presentación comercial</title>
+<style>
+  /* Tipografía Inter incrustada desde disco (latin + latin-ext por peso,
+     ver SKILL.md de pdf-documento: sin latin-ext las tildes caen a Segoe). */
+  @font-face { font-family: "Inter"; font-weight: 400; font-style: normal; font-display: block;
+               src: url("fuentes/Inter-400-latin.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-weight: 400; font-style: normal; font-display: block;
+               src: url("fuentes/Inter-400-latinext.woff2") format("woff2");
+               unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+                              U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+2113, U+2C60-2C7F; }
+  @font-face { font-family: "Inter"; font-weight: 500; font-style: normal; font-display: block;
+               src: url("fuentes/Inter-500-latin.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-weight: 500; font-style: normal; font-display: block;
+               src: url("fuentes/Inter-500-latinext.woff2") format("woff2");
+               unicode-range: U+0100-02BA, U+1E00-1E9F, U+2C60-2C7F; }
+  @font-face { font-family: "Inter"; font-weight: 600; font-style: normal; font-display: block;
+               src: url("fuentes/Inter-600-latin.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-weight: 600; font-style: normal; font-display: block;
+               src: url("fuentes/Inter-600-latinext.woff2") format("woff2");
+               unicode-range: U+0100-02BA, U+1E00-1E9F, U+2C60-2C7F; }
+  @font-face { font-family: "Inter"; font-weight: 700; font-style: normal; font-display: block;
+               src: url("fuentes/Inter-700-latin.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-weight: 700; font-style: normal; font-display: block;
+               src: url("fuentes/Inter-700-latinext.woff2") format("woff2");
+               unicode-range: U+0100-02BA, U+1E00-1E9F, U+2C60-2C7F; }
+
+  /* ===================== ZONA DE MARCA (Boxy) ===================== */
+  :root {
+    --verde:     #16A34A;   /* Marca / principal */
+    --verde-cl:  #DCFCE7;
+    --verde-os:  #14532D;
+    --violeta:   #7C3AED;
+    --naranja:   #EA8A00;
+    --rosa:      #E11D48;
+
+    --negro:     #0F172A;
+    --gris:      #475569;
+    --gris-sua:  #94A3B8;
+    --linea:     #E2E8F0;
+    --fondo:     #F8FAFC;
+  }
+
+  /* Diapositiva 16:9 (13,33 x 7,5 pulgadas, como PowerPoint) */
+  @page { size: 338.67mm 190.5mm; margin: 0; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    margin: 0; counter-reset: slide;
+    font-family: "Inter", system-ui, sans-serif; color: var(--gris);
+    font-size: 11pt; line-height: 1.5; font-feature-settings: "cv05" 1, "ss01" 1;
+  }
+  strong { color: var(--negro); font-weight: 600; }
+  em { font-style: normal; font-weight: 600; color: var(--verde); }
+
+  .slide {
+    counter-increment: slide;
+    width: 338.67mm; height: 190.5mm; overflow: hidden;
+    position: relative; page-break-after: always; break-after: page;
+    padding: 13mm 15mm 12mm;
+    display: flex; flex-direction: column;
+    background: #fff;
+  }
+  .slide:last-child { page-break-after: auto; break-after: auto; }
+
+  /* Cabecera y pie de cada diapositiva */
+  .cab { display: flex; align-items: center; gap: 9px; margin-bottom: 5mm; }
+  .cab .ind { width: 24px; height: 4px; border-radius: 2px; background: var(--c, var(--verde)); }
+  .cab .cap { font-size: 8.6pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--gris-sua); }
+  .pie {
+    position: absolute; left: 15mm; right: 15mm; bottom: 6.5mm;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 8pt; color: var(--gris-sua); font-weight: 500;
+  }
+  .pie .marca { display: flex; align-items: center; gap: 6px; color: var(--gris); font-weight: 600; }
+  .pie .num::before { content: counter(slide); }
+  .logo {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px; border-radius: 5px; background: var(--verde);
+    color: #fff; font-weight: 700; font-size: 9pt; letter-spacing: -.03em;
+  }
+
+  h1, h2, h3 { color: var(--negro); letter-spacing: -.03em; margin: 0; }
+  h2 { font-size: 25pt; line-height: 1.12; font-weight: 700; }
+  h2 .acento { color: var(--verde); }
+  .lead { font-size: 12.4pt; line-height: 1.55; margin: 4mm 0 0; color: var(--gris); }
+
+  /* Texto + captura */
+  .dos { display: grid; grid-template-columns: 92mm 1fr; gap: 11mm; flex: 1; min-height: 0; align-items: center; }
+  .dos.inv { grid-template-columns: 1fr 92mm; }
+  .puntos { list-style: none; margin: 6mm 0 0; padding: 0; }
+  .puntos li { position: relative; padding-left: 17px; margin-bottom: 3.2mm; font-size: 10.6pt; line-height: 1.45; }
+  .puntos li::before {
+    content: ""; position: absolute; left: 0; top: 6px;
+    width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--verde));
+  }
+
+  /* Marco de "ventana" para las capturas */
+  .pantalla {
+    margin: 0; border-radius: 10px; overflow: hidden; background: #fff;
+    border: 1px solid var(--linea);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, .12), 0 2px 6px rgba(15, 23, 42, .06);
+  }
+  .pantalla .barra {
+    height: 7mm; background: #F1F5F9; border-bottom: 1px solid var(--linea);
+    display: flex; align-items: center; gap: 5px; padding: 0 9px;
+  }
+  .pantalla .barra i { width: 8px; height: 8px; border-radius: 50%; background: #CBD5E1; }
+  .pantalla .barra span { margin-left: 10px; font-size: 7.4pt; color: var(--gris-sua); font-weight: 500; }
+  .pantalla > img { display: block; width: 100%; }
+  .pantalla.oscura { border-color: #1E293B; }
+  .pantalla.oscura .barra { background: #0B1220; border-bottom-color: #1E293B; }
+  .pantalla.oscura .barra i { background: #334155; }
+
+  /* Recorte de una captura: --x --y --w --h en píxeles del original (2880 x 1800) */
+  .recorte { position: relative; overflow: hidden; aspect-ratio: var(--w) / var(--h); }
+  .recorte img {
+    position: absolute; max-width: none;
+    width: calc(2880 / var(--w) * 100%);
+    left: calc(var(--x) / var(--w) * -100%);
+    top: calc(var(--y) / var(--h) * -100%);
+  }
+  .pie-foto { font-size: 8.6pt; color: var(--gris-sua); margin-top: 2.5mm; text-align: center; }
+
+  /* Etiquetas pequeñas (chips) */
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5mm; }
+  .chip {
+    font-size: 8.6pt; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+    background: var(--verde-cl); color: var(--verde-os);
+  }
+
+  /* Fichas */
+  .fichas { display: grid; gap: 5mm; margin-top: 8mm; }
+  .fichas.grande .ficha { padding: 7mm 6.5mm; }
+  .fichas.grande .ico { width: 38px; height: 38px; font-size: 13pt; border-radius: 11px; }
+  .fichas.grande h3 { font-size: 13.5pt; }
+  .fichas.grande p { font-size: 10.6pt; }
+  .fichas.c4 { grid-template-columns: repeat(4, 1fr); }
+  .fichas.c3 { grid-template-columns: repeat(3, 1fr); }
+  .fichas.c2 { grid-template-columns: repeat(2, 1fr); }
+  .ficha {
+    border: 1px solid var(--linea); border-radius: 12px; padding: 5.5mm 5mm;
+    background: #fff; break-inside: avoid;
+  }
+  .ficha .ico {
+    width: 30px; height: 30px; border-radius: 9px; margin-bottom: 3.5mm;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 11pt; color: #fff; background: var(--c, var(--verde));
+  }
+  .ficha h3 { font-size: 12pt; font-weight: 600; letter-spacing: -.015em; margin-bottom: 1.8mm; }
+  .ficha p { margin: 0; font-size: 9.6pt; line-height: 1.5; }
+
+  /* Rejilla de módulos */
+  .modulos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5mm; margin-top: 10mm; }
+  .modulo { border-radius: 12px; padding: 6.5mm 6mm 6mm; background: var(--fondo); border: 1px solid var(--linea); }
+  .modulo .t { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--negro); font-size: 12pt; }
+  .modulo .t::before { content: ""; width: 9px; height: 9px; border-radius: 3px; background: var(--c, var(--verde)); flex: 0 0 auto; }
+  .modulo p { margin: 2mm 0 0; font-size: 10pt; line-height: 1.5; }
+
+  /* Portada */
+  .portada {
+    padding: 0; flex-direction: row;
+    background:
+      radial-gradient(120mm 120mm at 8% 15%, #DCFCE7 0%, rgba(220,252,231,0) 70%),
+      radial-gradient(150mm 110mm at 95% 100%, #ECFDF5 0%, rgba(236,253,245,0) 70%),
+      #fff;
+  }
+  .portada .izq { width: 150mm; padding: 16mm 0 14mm 17mm; display: flex; flex-direction: column; }
+  .portada .marca { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15pt; color: var(--negro); letter-spacing: -.02em; }
+  .portada .marca .logo { width: 34px; height: 34px; border-radius: 10px; font-size: 16pt; }
+  .portada .pildora {
+    margin-top: 26mm; align-self: flex-start; font-size: 9pt; font-weight: 600;
+    background: var(--verde-cl); color: var(--verde-os); padding: 4px 11px; border-radius: 999px;
+  }
+  .portada h1 { font-size: 36pt; line-height: 1.05; font-weight: 700; margin-top: 5mm; }
+  .portada h1 .acento { color: var(--verde); }
+  .portada .bajada { font-size: 13pt; line-height: 1.55; margin-top: 6mm; max-width: 122mm; }
+  .portada .pie-portada { margin-top: auto; font-size: 8.8pt; color: var(--gris-sua); display: flex; gap: 14px; }
+  .portada .der { flex: 1; position: relative; }
+  .portada .der .pantalla {
+    position: absolute; width: 235mm; left: 8mm; top: 26mm;
+    transform: perspective(1400px) rotateY(-9deg) rotateX(2deg);
+    transform-origin: left center;
+  }
+
+  /* Diapositivas oscuras */
+  .oscura-slide { background: #0B1220; color: #CBD5E1; }
+  .oscura-slide h2, .oscura-slide strong { color: #F8FAFC; }
+  .oscura-slide .cab .cap, .oscura-slide .pie { color: #64748B; }
+  .oscura-slide .pie .marca { color: #CBD5E1; }
+
+  /* Avisos */
+  .aviso { border-radius: 10px; padding: 4.5mm 5.5mm; background: var(--fondo); border-left: 4px solid var(--gris-sua); font-size: 10pt; }
+  .aviso .rot { display: block; font-size: 8.2pt; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 1.5mm; }
+  .aviso p { margin: 0; }
+  .aviso.info { background: #EFF6FF; border-left-color: #2563EB; }
+  .aviso.info .rot { color: #1D4ED8; }
+  .aviso.ok { background: #F0FDF4; border-left-color: var(--verde); }
+  .aviso.ok .rot { color: var(--verde-os); }
+
+  /* Pasos */
+  .pasos { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5mm; margin-top: 11mm; counter-reset: paso; }
+  .paso { counter-increment: paso; border-top: 3px solid var(--verde); padding-top: 4mm; }
+  .paso::before { content: counter(paso, decimal-leading-zero); display: block; font-size: 9pt; font-weight: 700; color: var(--verde); letter-spacing: .08em; }
+  .paso h3 { font-size: 13pt; font-weight: 600; margin: 2mm 0 2mm; letter-spacing: -.01em; }
+  .paso p { margin: 0; font-size: 10.4pt; line-height: 1.5; }
+
+  .dos-fotos { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; margin-top: 6mm; flex: 1; min-height: 0; align-items: start; }
+</style>
+</head>
+<body>
+
+<!-- 1 · PORTADA -->
+<section class="slide portada">
+  <div class="izq">
+    <div class="marca"><span class="logo">B</span><span>Boxy</span></div>
+    <span class="pildora">Hecho para abastos y minimarkets venezolanos</span>
+    <h1>Vende más rápido.<br>Controla tu inventario.<br><span class="acento">Conoce tu negocio.</span></h1>
+    <p class="bajada">Punto de venta, inventario, clientes y análisis de ganancias en un solo sistema. Precios en dólares, cobros en bolívares y divisas, con IVA e IGTF calculados solos.</p>
+    <div class="pie-portada"><span>Propuesta comercial</span><span>Septiembre 2026</span></div>
+  </div>
+  <div class="der">
+    <figure class="pantalla">
+      <div class="barra"><i></i><i></i><i></i><span>Boxy &middot; Dashboard</span></div>
+      <img src="capturas/dashboard.jpg" alt="">
+    </figure>
+  </div>
+</section>
+
+<!-- 2 · PARA QUIÉN -->
+<section class="slide">
+  <div class="cab"><span class="ind"></span><span class="cap">Por qué Boxy</span></div>
+  <h2>Pensado para el día a día de <span class="acento">un abasto en Venezuela</span></h2>
+  <p class="lead" style="max-width:230mm">Los precios se piensan en dólares, se cobran en bolívares, pago móvil, efectivo y Zelle, y la tasa cambia todos los días. Boxy está hecho para esa realidad, no adaptado de un sistema extranjero.</p>
+  <div class="fichas c4 grande">
+    <div class="ficha" style="--c:var(--verde)">
+      <div class="ico">$</div>
+      <h3>Dólar y bolívar a la vez</h3>
+      <p>Cargas el precio en dólares y la caja muestra el total en bolívares a la tasa BCV del día, que se actualiza sola dos veces al día.</p>
+    </div>
+    <div class="ficha" style="--c:var(--violeta)">
+      <div class="ico">%</div>
+      <h3>Todos los medios de pago</h3>
+      <p>Efectivo en Bs o dólares, pago móvil, transferencia, punto de venta y Zelle, incluso combinados en una misma venta. El IGTF del 3&nbsp;% se calcula solo.</p>
+    </div>
+    <div class="ficha" style="--c:var(--naranja)">
+      <div class="ico">#</div>
+      <h3>Inventario que cuadra</h3>
+      <p>Cada venta descuenta el stock y deja rastro en el kardex. Sabes qué tienes, cuánto vale y qué está por agotarse.</p>
+    </div>
+    <div class="ficha" style="--c:var(--rosa)">
+      <div class="ico">+</div>
+      <h3>Decisiones con datos</h3>
+      <p>Qué se vende más, cuánto ganas por producto, qué reponer y qué combos armar. Sin hojas de cálculo.</p>
+    </div>
+  </div>
+  <figure class="pantalla" style="margin-top:8mm">
+    <div class="recorte" style="--x:562; --y:489; --w:2268; --h:234"><img src="capturas/monitor.jpg" alt=""></div>
+  </figure>
+  <div class="pie"><span class="marca"><span class="logo">B</span>Boxy</span><span class="num"></span></div>
+</section>
+
+<!-- 3 · MÓDULOS -->
+<section class="slide">
+  <div class="cab"><span class="ind"></span><span class="cap">Todo en un solo sistema</span></div>
+  <h2>Doce herramientas que <span class="acento">trabajan juntas</span></h2>
+  <div class="modulos">
+    <div class="modulo" style="--c:var(--verde)"><div class="t">Caja (POS)</div><p>Venta rápida con buscador, lector de códigos y los más vendidos a un toque.</p></div>
+    <div class="modulo" style="--c:var(--verde)"><div class="t">Escáner con el teléfono</div><p>El celular del cajero se convierte en lector de códigos de barras.</p></div>
+    <div class="modulo" style="--c:var(--verde)"><div class="t">Etiquetas</div><p>Imprime etiquetas con código de barras y precio para tus productos.</p></div>
+    <div class="modulo" style="--c:var(--verde)"><div class="t">Calculadora integrada</div><p>Con equivalente en bolívares, sin salir de la caja.</p></div>
+    <div class="modulo" style="--c:var(--violeta)"><div class="t">Inventario y kardex</div><p>Entradas, salidas, ajustes y el historial completo de cada producto.</p></div>
+    <div class="modulo" style="--c:var(--violeta)"><div class="t">Importar desde Excel</div><p>Carga cientos de productos con precio, costo, categoría y stock de una vez.</p></div>
+    <div class="modulo" style="--c:var(--violeta)"><div class="t">Clientes</div><p>Registro con cédula o RIF, teléfono y correo, asignables en cada venta.</p></div>
+    <div class="modulo" style="--c:var(--violeta)"><div class="t">Ventas y comprobantes</div><p>Historial numerado de ventas, en dólares y bolívares, con comprobante en PDF.</p></div>
+    <div class="modulo" style="--c:var(--naranja)"><div class="t">Dashboard</div><p>Ventas del día y de la semana, valor del inventario y alertas.</p></div>
+    <div class="modulo" style="--c:var(--naranja)"><div class="t">Monitor en vivo</div><p>Cada venta al instante, ritmo por hora, medios de pago y cajeros.</p></div>
+    <div class="modulo" style="--c:var(--naranja)"><div class="t">Análisis de rentabilidad</div><p>Margen y ganancia real de cada producto en los últimos 30 días.</p></div>
+    <div class="modulo" style="--c:var(--rosa)"><div class="t">Tasas y usuarios</div><p>BCV y USDT automáticas, otras monedas a mano. Usuarios por rol.</p></div>
+  </div>
+  <div class="pie"><span class="marca"><span class="logo">B</span>Boxy</span><span class="num"></span></div>
+</section>
+
+<!-- 4 · CAJA -->
+<section class="slide">
+  <div class="cab"><span class="ind"></span><span class="cap">Caja (POS)</span></div>
+  <div class="dos">
+    <div>
+      <h2>Una caja <span class="acento">rápida</span> para las horas pico</h2>
+      <p class="lead">Menos clics por venta y cero cuentas a mano.</p>
+      <ul class="puntos">
+        <li><strong>Busca por nombre, SKU o código</strong> con lector de barras, la cámara de la PC o el teléfono.</li>
+        <li><strong>Los más vendidos a un toque</strong>, ordenados por lo que realmente sale en tu negocio.</li>
+        <li><strong>Total en dólares y en bolívares</strong> a tasa BCV, con referencia USDT si la necesitas.</li>
+        <li><strong>IVA por producto</strong> (16&nbsp;%, 8&nbsp;% o exento) e <strong>IGTF 3&nbsp;%</strong> automático en pagos en divisas.</li>
+        <li><strong>Pagos combinados:</strong> un billete de 10 dólares y el resto por pago móvil, sin enredos.</li>
+      </ul>
+    </div>
+    <figure class="pantalla">
+      <div class="barra"><i></i><i></i><i></i><span>Caja (POS)</span></div>
+      <img src="capturas/pos.jpg" alt="">
+    </figure>
+  </div>
+  <div class="pie"><span class="marca"><span class="logo">B</span>Boxy</span><span class="num"></span></div>
+</section>
+
+<!-- 5 · ESCÁNER Y ETIQUETAS -->
+<section class="slide">
+  <div class="cab"><span class="ind"></span><span class="cap">Escáner y etiquetas</span></div>
+  <h2>Tu teléfono es el <span class="acento">lector de códigos</span></h2>
+  <p class="lead" style="max-width:240mm">¿No tienes lector de barras? El cajero escanea el QR con su celular y cada código que lee cae directo en el carrito de la PC. Y para los productos que no traen código, Boxy te imprime la etiqueta.</p>
+  <div class="dos-fotos" style="grid-template-columns: 1fr 1fr;">
+    <div>
+      <figure class="pantalla">
+        <div class="barra"><i></i><i></i><i></i><span>Conectar teléfono como escáner</span></div>
+        <div class="recorte" style="--x:994; --y:455; --w:892; --h:640"><img src="capturas/scanner-qr.jpg" alt=""></div>
+      </figure>
+      <div class="pie-foto">Código de un solo uso, vence en 10 minutos</div>
+    </div>
+    <div>
+      <figure class="pantalla">
+        <div class="barra"><i></i><i></i><i></i><span>Etiqueta del producto</span></div>
+        <div class="recorte" style="--x:994; --y:580; --w:892; --h:640"><img src="capturas/etiqueta.jpg" alt=""></div>
+      </figure>
+      <div class="pie-foto">Código de barras, nombre y precio, listo para imprimir</div>
+    </div>
+  </div>
+  <div class="pie"><span class="marca"><span class="logo">B</span>Boxy</span><span class="num"></span></div>
+</section>
+
+<!-- 6 · DASHBOARD -->
+<section class="slide">
+  <div class="cab"><span class="ind" style="--c:var(--naranja)"></span><span class="cap">Dashboard</span></div>
+  <div class="dos inv">
+    <figure class="pantalla">
+      <div class="barra"><i></i><i></i><i></i><span>Dashboard</span></div>
+      <img src="capturas/dashboard.jpg" alt="">
+    </figure>
+    <div style="--c:var(--naranja)">
+      <h2>Tu negocio <span class="acento">de un vistazo</span></h2>
+      <p class="lead">Lo primero que ves al entrar.</p>
+      <ul class="puntos">
+        <li><strong>Ventas de hoy y de la semana</strong>, con el gráfico de los últimos 7 días.</li>
+        <li><strong>Valor del inventario</strong> a costo, para saber cuánto dinero tienes en anaqueles.</li>
+        <li><strong>Top de productos</strong> del mes, en unidades y en dólares.</li>
+        <li><strong>Alertas de bajo stock</strong> antes de que el cliente pregunte por algo que no hay.</li>
+        <li><strong>Tasa BCV del día</strong> y lo facturado hoy en bolívares.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pie"><span class="marca"><span class="logo">B</span>Boxy</span><span class="num"></span></div>
+</section>
+
+<!-- 7 · MONITOR -->
+<section class="slide">
+  <div class="cab"><span class="ind" style="--c:var(--naranja)"></span><span class="cap">Monitor en vivo</span></div>
+  <div class="dos">
+    <div style="--c:var(--naranja)">
+      <h2>Mira tu tienda <span class="acento">en tiempo real</span>, estés donde estés</h2>
+      <ul class="puntos">
+        <li><strong>Cada venta al instante:</strong> monto, cajero, cantidad de artículos y hora.</li>
+        <li><strong>Ritmo por hora</strong> comparado con un día normal: sabes si hoy va flojo antes de cerrar.</li>
+        <li><strong>Ganancia estimada del día</strong> y margen, no solo lo vendido.</li>
+        <li><strong>Medios de pago</strong> y porcentaje cobrado en divisas, con su IGTF.</li>
+        <li><strong>Ranking de cajeros</strong> por tickets y monto.</li>
+      </ul>
+    </div>
+    <figure class="pantalla">
+      <div class="barra"><i></i><i></i><i></i><span>Monitor en vivo</span></div>
+      <img src="capturas/monitor.jpg" alt="">
+    </figure>
+  </div>
+  <div class="pie"><span class="marca"><span class="logo">B</span>Boxy</span><span class="num"></span></div>
+</section>
+
+<!-- 8 · RECOMENDACIONES -->
+<section class="slide">
+  <div class="cab"><span class="ind" style="--c:var(--naranja)"></span><span class="cap">Recomendaciones automáticas</span></div>
+  <div class="dos">
+    <div style="--c:var(--naranja)">
+      <h2>Boxy te dice <span class="acento">qué hacer</span> con tus datos</h2>
+      <p class="lead">El sistema estudia tus ventas y te sugiere acciones concretas.</p>
+      <ul class="puntos">
+        <li><strong>Combos sugeridos:</strong> productos que tus clientes suelen llevar juntos.</li>
+        <li><strong>Productos en racha:</strong> lo que se está vendiendo más que la semana pasada.</li>
+        <li><strong>Reponer pronto:</strong> cuántos días de stock te quedan y cuánto pedir.</li>
+        <li><strong>Stock muerto:</strong> mercancía parada y el dinero que tienes ahí.</li>
+      </ul>
+    </div>
+    <figure class="pantalla" style="width:150mm; justify-self:center;">
+      <div class="barra"><i></i><i></i><i></i><span>Monitor &middot; Recomendaciones</span></div>
+      <div class="recorte" style="--x:554; --y:468; --w:1505; --h:1296"><img src="capturas/monitor3.jpg" alt=""></div>
+    </figure>
+  </div>
+  <div class="pie"><span class="marca"><span class="logo">B</span>Boxy</span><span class="num"></span></div>
+</section>
+
+<!-- 9 · INVENTARIO -->
+<section class="slide">
+  <div class="cab"><span class="ind" style="--c:var(--violeta)"></span><span class="cap">Inventario</span></div>
+  <h2>Inventario <span class="acento">bajo control</span>, con historial de cada movimiento</h2>
+  <div style="display:grid; grid-template-columns: 1fr 74mm 70mm; gap:7mm; margin-top:6mm; align-items:start; --c:var(--violeta)">
+    <figure class="pantalla">
+      <div class="barra"><i></i><i></i><i></i><span>Inventario</span></div>
+      <div class="recorte" style="--x:554; --y:170; --w:2326; --h:1630"><img src="capturas/inventario.jpg" alt=""></div>
+    </figure>
+    <figure class="pantalla">
+      <div class="barra"><i></i><i></i><i></i><span>Kardex</span></div>
+      <div class="recorte" style="--x:927; --y:127; --w:1026; --h:1250"><img src="capturas/kardex.jpg" alt=""></div>
+    </figure>
+    <ul class="puntos" style="margin-top:0">
+      <li><strong>Costo, precio y margen</strong> de cada producto en la misma tabla.</li>
+      <li><strong>Stock con mínimo</strong> y aviso en rojo cuando hay que reponer.</li>
+      <li><strong>Entradas, salidas y ajustes</strong> por compras, mermas o conteo.</li>
+      <li><strong>Kardex auditable:</strong> cada venta, compra o ajuste queda registrado con fecha.</li>
+      <li><strong>Importa tu catálogo desde Excel</strong> y empieza el mismo día.</li>
+    </ul>
+  </div>
+  <div class="pie"><span class="marca"><span class="logo">B</span>Boxy</span><span class="num"></span></div>
+</section>
+
+<!-- 10 · ANÁLISIS -->
+<section class="slide">
+  <div class="cab"><span class="ind" style="--c:var(--naranja)"></span><span class="cap">Análisis de rentabilidad</span></div>
+  <div class="dos">
+    <div style="--c:var(--naranja)">
+      <h2>No es lo que vendes, <span class="acento">es lo que ganas</span></h2>
+      <p class="lead">Un producto puede venderse mucho y dejar poco. Boxy te lo muestra claro.</p>
+      <ul class="puntos">
+        <li><strong>Ingresos y ganancia de los últimos 30 días</strong>, con el margen promedio del negocio.</li>
+        <li><strong>Por producto:</strong> costo, precio, margen, unidades vendidas e ingreso.</li>
+        <li><strong>Producto estrella</strong> del mes y los que conviene revisar.</li>
+      </ul>
+    </div>
+    <figure class="pantalla">
+      <div class="barra"><i></i><i></i><i></i><span>Análisis de rentabilidad</span></div>
+      <img src="capturas/analisis.jpg" alt="">
+    </figure>
+  </div>
+  <div class="pie"><span class="marca"><span class="logo">B</span>Boxy</span><span class="num"></span></div>
+</section>
+
+<!-- 11 · CLIENTES Y VENTAS -->
+<section class="slide">
+  <div class="cab"><span class="ind" style="--c:var(--violeta)"></span><span class="cap">Clientes y ventas</span></div>
+  <h2>Cada venta registrada, <span class="acento">cada cliente identificado</span></h2>
+  <div class="dos-fotos">
+    <div>
+      <figure class="pantalla">
+        <div class="barra"><i></i><i></i><i></i><span>Clientes</span></div>
+        <img src="capturas/clientes.jpg" alt="">
+      </figure>
+      <div class="pie-foto">Clientes con cédula o RIF, teléfono y correo. Se asignan desde la caja en segundos.</div>
+    </div>
+    <div>
+      <figure class="pantalla">
+        <div class="barra"><i></i><i></i><i></i><span>Ventas</span></div>
+        <img src="capturas/ventas.jpg" alt="">
+      </figure>
+      <div class="pie-foto">Historial numerado, en dólares y bolívares, con el comprobante en PDF de cada venta.</div>
+    </div>
+  </div>
+  <div class="pie"><span class="marca"><span class="logo">B</span>Boxy</span><span class="num"></span></div>
+</section>
+
+<!-- 12 · TASAS -->
+<section class="slide">
+  <div class="cab"><span class="ind" style="--c:var(--rosa)"></span><span class="cap">Tasas de cambio</span></div>
+  <div class="dos inv">
+    <figure class="pantalla">
+      <div class="barra"><i></i><i></i><i></i><span>Tasas de cambio</span></div>
+      <img src="capturas/tasas.jpg" alt="">
+    </figure>
+    <div style="--c:var(--rosa)">
+      <h2>La tasa del día, <span class="acento">sin estar pendiente</span></h2>
+      <ul class="puntos">
+        <li><strong>BCV y USDT se sincronizan solas</strong> a las 9:00 a.&nbsp;m. y a la 1:00 p.&nbsp;m.</li>
+        <li><strong>Botón para actualizar</strong> en cualquier momento si la tasa cambia.</li>
+        <li><strong>Otras monedas</strong> (euro, peso colombiano...) se registran a mano.</li>
+        <li><strong>Historial de tasas</strong> para saber a cuánto se vendió cada día.</li>
+        <li>Los precios viven en dólares: <strong>cambia la tasa y todo se recalcula solo.</strong></li>
+      </ul>
+    </div>
+  </div>
+  <div class="pie"><span class="marca"><span class="logo">B</span>Boxy</span><span class="num"></span></div>
+</section>
+
+<!-- 13 · EQUIPO -->
+<section class="slide">
+  <div class="cab"><span class="ind" style="--c:var(--rosa)"></span><span class="cap">Tu equipo</span></div>
+  <div class="dos">
+    <div style="--c:var(--rosa)">
+      <h2>Cada quien con <span class="acento">su usuario</span></h2>
+      <ul class="puntos">
+        <li><strong>Roles:</strong> administrador, gerente, cajero e inventario.</li>
+        <li><strong>Cada venta registra quién la hizo</strong>, y el monitor muestra el desempeño de cada cajero.</li>
+        <li><strong>El menú de administración</strong> (usuarios y tasas) queda reservado al administrador.</li>
+        <li><strong>Desactivar a un empleado</strong> cierra sus sesiones al instante, sin borrar su historial.</li>
+      </ul>
+    </div>
+    <figure class="pantalla">
+      <div class="barra"><i></i><i></i><i></i><span>Usuarios</span></div>
+      <img src="capturas/usuarios.jpg" alt="">
+    </figure>
+  </div>
+  <div class="pie"><span class="marca"><span class="logo">B</span>Boxy</span><span class="num"></span></div>
+</section>
+
+<!-- 14 · PERSONALIZACIÓN (oscura) -->
+<section class="slide oscura-slide">
+  <div class="cab"><span class="ind"></span><span class="cap">A tu estilo</span></div>
+  <div class="dos">
+    <div>
+      <h2>Modo claro, modo oscuro y <span class="acento">tus colores</span></h2>
+      <ul class="puntos">
+        <li><strong>Modo oscuro</strong> para cajas con poca luz o turnos largos.</li>
+        <li><strong>Ocho colores de acento</strong> y efecto vidrio, a gusto de cada usuario.</li>
+        <li><strong>Funciona en el navegador</strong> y se instala como aplicación en la PC de la caja.</li>
+      </ul>
+    </div>
+    <figure class="pantalla oscura">
+      <div class="barra"><i></i><i></i><i></i><span>Caja (POS) &middot; modo oscuro</span></div>
+      <img src="capturas/dark-pos.jpg" alt="">
+    </figure>
+  </div>
+  <div class="pie"><span class="marca"><span class="logo">B</span>Boxy</span><span class="num"></span></div>
+</section>
+
+<!-- 15 · NORMATIVA -->
+<section class="slide">
+  <div class="cab"><span class="ind"></span><span class="cap">Normativa venezolana</span></div>
+  <h2>IVA, IGTF y bolívares, <span class="acento">resueltos</span></h2>
+  <div style="display:grid; grid-template-columns: 1fr 104mm; gap:10mm; margin-top:6mm; align-items:start;">
+    <div>
+      <div class="fichas c3 grande" style="margin-top:0">
+        <div class="ficha" style="--c:var(--verde)">
+          <div class="ico">IVA</div>
+          <h3>IVA por producto</h3>
+          <p>Cada producto lleva su alícuota: general 16&nbsp;%, reducida 8&nbsp;% o exento. El desglose sale solo en cada venta.</p>
+        </div>
+        <div class="ficha" style="--c:var(--violeta)">
+          <div class="ico">3%</div>
+          <h3>IGTF automático</h3>
+          <p>El 3&nbsp;% sobre los pagos en divisas (efectivo en dólares, Zelle) se calcula y se suma sin que el cajero haga nada.</p>
+        </div>
+        <div class="ficha" style="--c:var(--naranja)">
+          <div class="ico">Bs</div>
+          <h3>Montos en bolívares</h3>
+          <p>Todo se expresa también en bolívares a la tasa oficial del BCV del día, que queda guardada en cada venta.</p>
+        </div>
+      </div>
+      <div class="aviso info" style="margin-top:7mm; font-size:10.4pt">
+        <span class="rot">Sobre la facturación fiscal</span>
+        <p>Los comprobantes de Boxy son para el control interno del negocio. Los documentos con validez fiscal ante el SENIAT los emite la <strong>máquina fiscal homologada</strong> del comercio (o una <strong>imprenta digital autorizada</strong>, según el caso). La conexión de Boxy con la impresora fiscal se puede desarrollar como ampliación y se cotiza aparte.</p>
+      </div>
+    </div>
+    <figure class="pantalla">
+      <div class="barra"><i></i><i></i><i></i><span>Caja &middot; totales de la venta</span></div>
+      <div class="recorte" style="--x:1721; --y:360; --w:1109; --h:1030"><img src="capturas/pos.jpg" alt=""></div>
+    </figure>
+  </div>
+  <div class="pie"><span class="marca"><span class="logo">B</span>Boxy</span><span class="num"></span></div>
+</section>
+
+<!-- 16 · CÓMO EMPEZAMOS -->
+<section class="slide">
+  <div class="cab"><span class="ind"></span><span class="cap">Cómo empezamos</span></div>
+  <h2>De la demostración a <span class="acento">vender con Boxy</span></h2>
+  <div class="pasos">
+    <div class="paso"><h3>Demostración</h3><p>Te mostramos Boxy funcionando con productos de tu propio negocio.</p></div>
+    <div class="paso"><h3>Instalación</h3><p>En la PC de tu tienda o en un servidor en internet para verlo desde cualquier lugar.</p></div>
+    <div class="paso"><h3>Carga del catálogo</h3><p>Importamos tus productos, precios, costos y stock desde Excel.</p></div>
+    <div class="paso"><h3>Capacitación</h3><p>Tu equipo aprende a vender, cargar mercancía y leer los reportes.</p></div>
+    <div class="paso"><h3>Arranque</h3><p>Te acompañamos los primeros días de uso real en la tienda.</p></div>
+  </div>
+  <div class="fichas c3 grande" style="margin-top:12mm">
+    <div class="ficha" style="--c:var(--verde)"><h3>Tecnología moderna</h3><p>Laravel y MySQL en el servidor, React en la pantalla. Estable, rápido y fácil de mantener.</p></div>
+    <div class="ficha" style="--c:var(--violeta)"><h3>Tus datos son tuyos</h3><p>La información vive en tu propia base de datos, bajo tu control, y puedes respaldarla cuando quieras.</p></div>
+    <div class="ficha" style="--c:var(--naranja)"><h3>Crece contigo</h3><p>La estructura contempla varias sucursales y usuarios, para cuando el negocio crezca.</p></div>
+  </div>
+  <div class="pie"><span class="marca"><span class="logo">B</span>Boxy</span><span class="num"></span></div>
+</section>
+
+<!-- 17 · CIERRE -->
+<section class="slide portada" style="align-items:center;">
+  <div class="izq" style="width:100%; padding:0 20mm; align-items:center; text-align:center;">
+    <div class="marca" style="margin-top:34mm"><span class="logo">B</span><span>Boxy</span></div>
+    <h1 style="margin-top:9mm; font-size:34pt;">Tu abasto, <span class="acento">ordenado y rentable.</span></h1>
+    <p class="bajada" style="max-width:190mm; margin-left:auto; margin-right:auto;">Agenda una demostración y mira Boxy funcionando con los productos de tu negocio.</p>
+    <div class="chips" style="justify-content:center; margin-top:9mm">
+      <span class="chip">Caja rápida</span><span class="chip">Bolívares y divisas</span><span class="chip">IVA e IGTF</span>
+      <span class="chip">Inventario y kardex</span><span class="chip">Clientes</span><span class="chip">Ganancias por producto</span>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

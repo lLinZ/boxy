@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($cmds = \"php\",\"composer\",\"mysql\"; foreach \\($c in $cmds\\) { $p = Get-Command $c -ErrorAction SilentlyContinue; if \\($p\\) { \"$c : $\\($p.Source\\)\" } else { \"$c : NOT FOUND\" } })",
+      "Bash(composer create-project *)",
+      "Read(//c/xampp/mysql/bin/**)",
+      "Bash(./mysqld.exe --defaults-file=\"C:/xampp/mysql/bin/my.ini\" --standalone)",
+      "PowerShell(& C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe -u root -e \"CREATE DATABASE IF NOT EXISTS crotone CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; SHOW DATABASES LIKE 'crotone';\")",
+      "Bash(./apps/api/vendor/bin/sail)",
+      "Bash(\"C:/xampp/php/php.exe\" artisan *)",
+      "Bash(curl -s -X POST http://127.0.0.1:8000/api/login -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"email\":\"admin@crotone.com\",\"password\":\"password\",\"device_name\":\"test\"}')",
+      "Bash(npm create *)",
+      "Bash(npm install *)",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\('heroui:',p.dependencies['@heroui/react']\\); console.log\\('framer-motion:',p.dependencies['framer-motion']\\); console.log\\('router:',p.dependencies['react-router-dom']\\); console.log\\('axios:',p.dependencies['axios']\\); console.log\\('tailwind:',p.devDependencies['tailwindcss']\\)\")",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\('heroui:',p.dependencies['@heroui/react']\\); console.log\\('framer-motion:',p.dependencies['framer-motion']\\); console.log\\('router:',p.dependencies['react-router-dom']\\); console.log\\('axios:',p.dependencies['axios']\\)\")",
+      "Bash(npm run *)",
+      "mcp__Claude_Preview__preview_start"
+    ]
+  }
+}

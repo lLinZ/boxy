@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Boxy &middot; Informe técnico previo a la venta</title>
+<style>
+  @font-face { font-family: "Inter"; font-weight: 400; font-style: normal; font-display: block;
+               src: url("fuentes/Inter-400-latin.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-weight: 400; font-style: normal; font-display: block;
+               src: url("fuentes/Inter-400-latinext.woff2") format("woff2");
+               unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+                              U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+2113, U+2C60-2C7F; }
+  @font-face { font-family: "Inter"; font-weight: 500; font-style: normal; font-display: block;
+               src: url("fuentes/Inter-500-latin.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-weight: 500; font-style: normal; font-display: block;
+               src: url("fuentes/Inter-500-latinext.woff2") format("woff2");
+               unicode-range: U+0100-02BA, U+1E00-1E9F, U+2C60-2C7F; }
+  @font-face { font-family: "Inter"; font-weight: 600; font-style: normal; font-display: block;
+               src: url("fuentes/Inter-600-latin.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-weight: 600; font-style: normal; font-display: block;
+               src: url("fuentes/Inter-600-latinext.woff2") format("woff2");
+               unicode-range: U+0100-02BA, U+1E00-1E9F, U+2C60-2C7F; }
+  @font-face { font-family: "Inter"; font-weight: 700; font-style: normal; font-display: block;
+               src: url("fuentes/Inter-700-latin.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-weight: 700; font-style: normal; font-display: block;
+               src: url("fuentes/Inter-700-latinext.woff2") format("woff2");
+               unicode-range: U+0100-02BA, U+1E00-1E9F, U+2C60-2C7F; }
+
+  /* ZONA DE MARCA — Boxy */
+  :root {
+    --azul:     #16A34A;   /* Principal (verde Boxy) */
+    --rojo:     #DC2626;
+    --amarillo: #F59E0B;
+    --verde:    #15803D;
+
+    --negro:    #202124;
+    --gris:     #5F6368;
+    --gris-sua: #80868B;
+    --linea:    #E8EAED;
+    --fondo:    #F8F9FA;
+  }
+
+  @page {
+    size: A4;
+    margin: 18mm 16mm 20mm 16mm;
+    @bottom-center {
+      content: counter(page);
+      font-family: "Inter", sans-serif; font-size: 8.6pt; font-weight: 500; color: #80868B;
+    }
+  }
+  @page:first { margin: 0; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    margin: 0; font-family: "Inter", system-ui, sans-serif;
+    font-size: 10.2pt; line-height: 1.62; color: var(--gris);
+    font-feature-settings: "cv05" 1, "ss01" 1;
+  }
+
+  .portada { height: 297mm; padding: 30mm 24mm 26mm; display: flex; flex-direction: column; page-break-after: always; }
+  .marca-portada { display: flex; align-items: center; gap: 11px; font-size: 13pt; font-weight: 700; color: var(--negro); letter-spacing: -0.02em; }
+  .cuadro-logo { width: 34px; height: 34px; border-radius: 9px; background: var(--azul); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12pt; font-weight: 700; letter-spacing: -0.03em; }
+  .portada h1 { margin: 62mm 0 0; font-size: 38pt; line-height: 1.06; font-weight: 700; color: var(--negro); letter-spacing: -0.035em; }
+  .portada .bajada { margin: 16px 0 0; font-size: 12.5pt; line-height: 1.55; color: var(--gris); max-width: 128mm; }
+  .tiras { display: flex; gap: 7px; margin: 34px 0 0; }
+  .tiras span { height: 6px; width: 58px; border-radius: 3px; }
+  .pie-portada { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--linea); display: flex; justify-content: space-between; font-size: 8.6pt; color: var(--gris-sua); }
+
+  .indice { page-break-after: always; }
+  .indice ol { list-style: none; margin: 0; padding: 0; }
+  .indice > ol > li { margin-bottom: 3px; }
+  .indice > ol > li > a { display: flex; align-items: baseline; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--linea); text-decoration: none; color: var(--negro); font-size: 10.6pt; font-weight: 600; }
+  .indice .num { flex: 0 0 22px; font-size: 9pt; font-weight: 700; color: var(--azul); }
+  .indice .rel { flex: 1; }
+  .indice .sub { font-weight: 400; font-size: 9.2pt; color: var(--gris-sua); padding: 2px 0 6px 32px; }
+
+  h2 { margin: 0 0 4px; font-size: 19pt; font-weight: 700; color: var(--negro); letter-spacing: -0.028em; line-height: 1.2; }
+  .seccion { page-break-before: always; }
+  .cinta { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; }
+  .cinta .indicador { width: 26px; height: 4px; border-radius: 2px; }
+  .cinta .capitulo { font-size: 8.4pt; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--gris-sua); }
+  .entradilla { margin: 0 0 22px; font-size: 10.6pt; color: var(--gris); max-width: 160mm; }
+  h3 { margin: 26px 0 8px; font-size: 12.2pt; font-weight: 600; color: var(--negro); letter-spacing: -0.015em; }
+  h4 { margin: 18px 0 6px; font-size: 10.4pt; font-weight: 600; color: var(--negro); }
+  h3, h4 { page-break-after: avoid; break-after: avoid; }
+  p { margin: 0 0 10px; }
+  strong { color: var(--negro); font-weight: 600; }
+  em { font-style: normal; font-weight: 500; color: var(--negro); }
+  code { font-family: "Inter", monospace; font-size: 8.8pt; background: var(--fondo); border: 1px solid var(--linea); border-radius: 4px; padding: 0 4px; color: var(--negro); word-break: break-word; }
+
+  ol.pasos { counter-reset: paso; list-style: none; margin: 12px 0 16px; padding: 0; }
+  ol.pasos > li { counter-increment: paso; position: relative; padding: 0 0 13px 34px; page-break-inside: avoid; }
+  ol.pasos > li::before { content: counter(paso); position: absolute; left: 0; top: 0; width: 21px; height: 21px; border-radius: 50%; background: var(--azul); color: #fff; font-size: 8.6pt; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  ol.pasos > li::after { content: ""; position: absolute; left: 10px; top: 25px; bottom: 3px; width: 1px; background: var(--linea); }
+  ol.pasos > li:last-child::after { display: none; }
+  ol.pasos > li p { margin: 0 0 3px; }
+  ol.pasos > li p:first-child { color: var(--negro); font-weight: 500; padding-top: 1px; }
+
+  ul.lista { margin: 8px 0 14px; padding-left: 17px; }
+  ul.lista li { margin-bottom: 5px; padding-left: 3px; }
+  ul.lista li::marker { color: var(--azul); }
+
+  .aviso { margin: 14px 0; padding: 11px 14px; border-radius: 8px; background: var(--fondo); border-left: 3px solid var(--gris-sua); font-size: 9.6pt; page-break-inside: avoid; }
+  .aviso p { margin: 0; }
+  .aviso p + p { margin-top: 6px; }
+  .aviso .rotulo { display: block; font-size: 8.2pt; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .aviso.ojo { border-left-color: var(--amarillo); background: #FEF7E0; }
+  .aviso.ojo .rotulo { color: #B06000; }
+  .aviso.alto { border-left-color: var(--rojo); background: #FCE8E6; }
+  .aviso.alto .rotulo { color: #C5221F; }
+  .aviso.bien { border-left-color: var(--verde); background: #E6F4EA; }
+  .aviso.bien .rotulo { color: #137333; }
+  .aviso.dato { border-left-color: #1A73E8; background: #E8F0FE; }
+  .aviso.dato .rotulo { color: #1967D2; }
+
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 9.2pt; page-break-inside: avoid; }
+  th { text-align: left; padding: 7px 9px; border-bottom: 2px solid var(--negro); font-size: 8.2pt; font-weight: 700; color: var(--negro); letter-spacing: 0.06em; text-transform: uppercase; }
+  td { padding: 7px 9px; border-bottom: 1px solid var(--linea); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  .si { color: var(--verde); font-weight: 700; }
+  .no { color: var(--rojo); font-weight: 700; }
+  .parte { color: #B06000; font-weight: 700; }
+
+  .fichas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0 18px; }
+  .ficha { border: 1px solid var(--linea); border-radius: 9px; padding: 12px 14px; page-break-inside: avoid; }
+  .ficha .titulo { font-size: 9.8pt; font-weight: 600; color: var(--negro); margin-bottom: 3px; display: flex; align-items: center; gap: 7px; }
+  .ficha .punto { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+  .ficha p { margin: 0; font-size: 9.2pt; }
+
+  pre.comando { margin: 8px 0 14px; padding: 10px 13px; background: var(--fondo); border: 1px solid var(--linea); border-left: 3px solid var(--azul); border-radius: 7px; font-family: "Inter", monospace; font-size: 8.6pt; line-height: 1.5; color: var(--negro); white-space: pre-wrap; word-break: break-word; page-break-inside: avoid; }
+
+  /* Hallazgos de seguridad */
+  .hallazgo { border: 1px solid var(--linea); border-radius: 10px; padding: 11px 14px 10px; margin: 0 0 10px; page-break-inside: avoid; }
+  .hallazgo .cab { display: flex; align-items: baseline; gap: 9px; margin-bottom: 5px; }
+  .hallazgo .id { font-size: 8.4pt; font-weight: 700; color: var(--gris-sua); flex: 0 0 auto; }
+  .hallazgo .tit { font-size: 10.4pt; font-weight: 600; color: var(--negro); flex: 1; line-height: 1.35; }
+  .sev { font-size: 7.6pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; flex: 0 0 auto; }
+  .sev.critico { background: #FCE8E6; color: #B3261E; }
+  .sev.alto { background: #FEEFE3; color: #B54708; }
+  .sev.medio { background: #FEF7E0; color: #8A6100; }
+  .sev.bajo { background: #F1F3F4; color: #5F6368; }
+  .hallazgo dl { margin: 0; display: grid; grid-template-columns: 22mm 1fr; column-gap: 8px; row-gap: 3px; font-size: 9.2pt; line-height: 1.5; }
+  .hallazgo dt { font-weight: 600; color: var(--negro); }
+  .hallazgo dd { margin: 0; }
+
+  .prio { font-size: 7.6pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; white-space: nowrap; }
+  .prio.p1 { background: #FCE8E6; color: #B3261E; }
+  .prio.p2 { background: #FEF7E0; color: #8A6100; }
+  .prio.p3 { background: #E6F4EA; color: #137333; }
+  .fuentes li { font-size: 8.8pt; word-break: break-all; }
+</style>
+</head>
+<body>
+
+<div class="portada">
+  <div class="marca-portada"><span class="cuadro-logo">B</span><span>Boxy</span></div>
+  <h1>Informe técnico<br>previo a la venta</h1>
+  <p class="bajada">Auditoría de seguridad del código, situación ante el SENIAT y lo que le falta al sistema para un abasto o minimarket. Documento interno: no se entrega al comprador.</p>
+  <div class="tiras">
+    <span style="background:var(--rojo)"></span>
+    <span style="background:var(--amarillo)"></span>
+    <span style="background:var(--azul)"></span>
+    <span style="background:var(--verde)"></span>
+  </div>
+  <div class="pie-portada"><span>Revisión del repositorio crotone (API Laravel 11 + web React 19)</span><span>29 de septiembre de 2026</span></div>
+</div>
+
+<section class="indice">
+  <div class="cinta"><span class="indicador" style="background:var(--azul)"></span><span class="capitulo">Contenido</span></div>
+  <h2>Qué hay en este documento</h2>
+  <p class="entradilla">Si solo lees una página, que sea el resumen. Los apartados 01 y 04 son los que hay que resolver antes de entregar el sistema.</p>
+  <ol>
+    <li><a href="#resumen"><span class="num">00</span><span class="rel">Resumen</span></a><div class="sub">El estado del sistema en una tabla y la respuesta corta a cada pregunta</div></li>
+    <li><a href="#seguridad"><span class="num">01</span><span class="rel">Auditoría de seguridad</span></a><div class="sub">20 hallazgos ordenados por gravedad, con archivo, impacto y arreglo</div></li>
+    <li><a href="#seniat"><span class="num">02</span><span class="rel">SENIAT y facturación fiscal</span></a><div class="sub">Qué dice la norma hoy, si Boxy se puede homologar y cómo venderlo sin meterte en líos</div></li>
+    <li><a href="#faltantes"><span class="num">03</span><span class="rel">Lo que le falta para un abasto</span></a><div class="sub">Funciones de caja, compras, crédito y CRM que un comprador va a pedir</div></li>
+    <li><a href="#plan"><span class="num">04</span><span class="rel">Plan antes de vender</span></a><div class="sub">El orden recomendado de trabajo</div></li>
+  </ol>
+</section>
+
+<!-- ============================ RESUMEN ============================ -->
+<section class="seccion" id="resumen" style="page-break-before:avoid">
+  <div class="cinta"><span class="indicador" style="background:var(--azul)"></span><span class="capitulo">00 &middot; Resumen</span></div>
+  <h2>El sistema es vendible, pero no todavía</h2>
+  <p class="entradilla">Boxy tiene una base sólida y se ve profesional: caja, inventario con kardex, análisis de rentabilidad, monitor en vivo y multimoneda funcionan con datos reales. Antes de entregarlo hay que cerrar agujeros de seguridad serios, dejar claro que no emite facturas fiscales y cubrir un par de funciones que cualquier abasto va a pedir el primer día.</p>
+
+  <table>
+    <thead><tr><th style="width:30%">Área</th><th style="width:16%">Estado</th><th>En una línea</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Seguridad</strong></td><td><span class="no">Por corregir</span></td><td>3 hallazgos críticos, 7 altos, 7 medios y 3 bajos. El peor: cualquier usuario, incluso uno recién registrado gratis, puede cambiar la tasa BCV que usan todas las empresas.</td></tr>
+      <tr><td><strong>Facturación fiscal</strong></td><td><span class="no">No válida</span></td><td>El PDF se titula “factura” y trae un número de control inventado por el sistema. No es un documento fiscal. Hay que rotularlo como no fiscal o integrar la máquina fiscal.</td></tr>
+      <tr><td><strong>Homologación SENIAT</strong></td><td><span class="si">Ya no aplica</span></td><td>La homologación de software (Providencia 121) se derogó el 12-08-2026. Hoy no hay trámite que hacer para el programa en sí.</td></tr>
+      <tr><td><strong>Funciones de venta e inventario</strong></td><td><span class="si">Buenas</span></td><td>POS rápido, IVA/IGTF, tasas automáticas, kardex, importación Excel, etiquetas, escáner con teléfono.</td></tr>
+      <tr><td><strong>Operación de un abasto</strong></td><td><span class="parte">Incompleta</span></td><td>Faltan cierre de caja, anulaciones, vuelto, compras a proveedores, fiado y ticket térmico.</td></tr>
+      <tr><td><strong>CRM</strong></td><td><span class="parte">Básico</span></td><td>Solo alta y edición de clientes. No hay historial por cliente, crédito, fidelización ni WhatsApp.</td></tr>
+      <tr><td><strong>Uso en teléfono</strong></td><td><span class="no">No sirve</span></td><td>El menú lateral no se adapta: en un celular la pantalla queda inutilizable, aunque la app sea instalable.</td></tr>
+      <tr><td><strong>Dependencias</strong></td><td><span class="parte">Desactualizadas</span></td><td>43 avisos de seguridad en paquetes PHP y 8 en npm (6 altos). Se resuelven casi todos actualizando.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Respuestas cortas a lo que preguntaste</h3>
+  <ul class="lista">
+    <li><strong>¿Se puede homologar ante el SENIAT?</strong> Hoy no existe ese trámite: el SENIAT eliminó la homologación de sistemas de facturación en agosto de 2026. Lo que sigue vigente es que el comercio emita sus facturas por un medio autorizado; en un abasto, eso es la máquina fiscal.</li>
+    <li><strong>¿Si el comprador es dueño del sistema, no hay problema?</strong> En lo esencial, sí: la obligación de facturar bien es del comercio. Tu riesgo está en <em>prometer</em> facturación fiscal. Se evita con tres cosas: rotular los comprobantes como no fiscales, no anunciarlo como “sistema fiscal” y dejarlo por escrito en el contrato. Detalle en el apartado 02.</li>
+    <li><strong>¿Qué le falta?</strong> Para arrancar: cierre de caja, anulaciones, vuelto, permisos por rol y diseño para teléfono. Para enamorar al comprador que pide un CRM: ficha del cliente con historial, fiado y mensajes por WhatsApp. Detalle en el apartado 03.</li>
+  </ul>
+
+  <div class="aviso dato">
+    <span class="rotulo">Cómo se hizo esta revisión</span>
+    <p>Lectura completa de los controladores, servicios, modelos, middleware, rutas y configuración de la API, y de las partes sensibles de la web (token, subida de archivos, permisos). Se levantó el sistema con una base de datos de demostración (41 productos, 736 ventas) para las capturas, y se corrieron <code>composer audit</code> y <code>npm audit</code>. No se hicieron pruebas de penetración contra un servidor en producción. Lo normativo no es asesoría legal: confírmalo con un contador o abogado tributario.</p>
+  </div>
+</section>
+
+<!-- =========================== SEGURIDAD =========================== -->
+<section class="seccion" id="seguridad">
+  <div class="cinta"><span class="indicador" style="background:var(--rojo)"></span><span class="capitulo">01 &middot; Seguridad</span></div>
+  <h2>Auditoría de seguridad</h2>
+  <p class="entradilla">Las rutas son relativas a <code>apps/api</code> salvo que digan <code>apps/web</code>. Varios hallazgos importan solo si el sistema se usa como SaaS con varias empresas; igual conviene corregirlos, porque el código es el mismo.</p>
+
+  <h3>Críticos</h3>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">C1</span><span class="tit">Cualquier usuario puede cambiar la tasa BCV de todas las empresas, o dejarlas sin poder vender</span><span class="sev critico">Crítico</span></div>
+    <dl>
+      <dt>Dónde</dt><dd><code>app/Http/Controllers/Api/TasaCambioController.php:58</code> (store) y <code>app/Models/TasaCambio.php:19</code> (vigente)</dd>
+      <dt>Qué pasa</dt><dd>La tabla de tasas no tiene empresa: es global. <code>POST /api/tasas</code> no revisa rol, acepta cualquier fecha y una tasa de 0. <code>vigente()</code> toma la de fecha más reciente. Alguien se registra gratis en <code>/api/registro</code>, carga una tasa con fecha 2099 y todas las ventas de todas las empresas se calculan con ella. Con tasa 0, cada venta falla por división entre cero. En una sola tienda, un cajero puede alterar los montos en bolívares.</dd>
+      <dt>Arreglo</dt><dd>Tasas por empresa (o solo el super-admin las carga); solo admin puede registrar; validar <code>tasa &gt; 0</code> y <code>fecha &lt;= hoy</code>; que <code>vigente()</code> filtre por fecha no futura; rechazar saltos anormales frente a la tasa anterior.</dd>
+    </dl>
+  </div>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">C2</span><span class="tit">Robo de sesión con un comprobante de pago en SVG (XSS almacenado)</span><span class="sev critico">Crítico</span></div>
+    <dl>
+      <dt>Dónde</dt><dd><code>app/Http/Controllers/Api/SuscripcionController.php:59</code> y <code>:67</code></dd>
+      <dt>Qué pasa</dt><dd>La regla <code>image</code> de Laravel 11 acepta SVG, y el comprobante se guarda en el disco público, servido desde el mismo dominio que la app (<code>/storage</code>). Un SVG con JavaScript se ejecuta al abrir el enlace y puede leer el token guardado en <code>localStorage</code>: quien lo abra (por ejemplo, el super-admin revisando pagos) entrega su cuenta.</dd>
+      <dt>Arreglo</dt><dd><code>mimes:jpg,jpeg,png,webp,pdf</code>; guardar en disco privado y servir por un endpoint autenticado con <code>Content-Disposition: attachment</code> y <code>X-Content-Type-Options: nosniff</code>; añadir una política CSP.</dd>
+    </dl>
+  </div>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">C3</span><span class="tit">El cajero puede vender al precio que quiera, con descuentos sin tope y sin cobrar completo</span><span class="sev critico">Crítico</span></div>
+    <dl>
+      <dt>Dónde</dt><dd><code>app/Http/Controllers/Api/VentaController.php:57-59</code> y <code>app/Services/FacturacionService.php:140-145</code></dd>
+      <dt>Qué pasa</dt><dd>El precio enviado por el navegador reemplaza al del catálogo; el descuento no tiene límite (puede dejar la venta en negativo); en ítems sin producto el navegador elige el IVA (exento); y no se valida que los pagos cubran el total. Con una llamada a la API se registra una venta de 100 dólares cobrada en 1. Es la vía clásica de robo interno en un comercio.</dd>
+      <dt>Arreglo</dt><dd>Usar siempre el precio del catálogo salvo permiso de supervisor; descuento máximo por rol y nunca mayor que la línea; IVA de ítems libres fijado por el servidor; exigir que la suma de pagos cubra el total y calcular el vuelto.</dd>
+    </dl>
+  </div>
+
+  <h3>Altos</h3>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">A1</span><span class="tit">Fuga de clientes entre empresas (IDOR)</span><span class="sev alto">Alto</span></div>
+    <dl>
+      <dt>Dónde</dt><dd><code>VentaController.php:50</code> (<code>exists:clientes,id</code>) y <code>ProductoController.php:290</code> (<code>exists:categorias,id</code>)</dd>
+      <dt>Qué pasa</dt><dd>La validación no filtra por empresa. Un usuario de la empresa A puede asociar a su venta el cliente 1, 2, 3... de otras empresas y luego leer su ficha completa (nombre, cédula, teléfono, correo, dirección) en <code>GET /api/ventas/{id}</code>.</dd>
+      <dt>Arreglo</dt><dd><code>Rule::exists('clientes','id')-&gt;where('empresa_id', ...)</code>, lo mismo para categorías.</dd>
+    </dl>
+  </div>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">A2</span><span class="tit">Sin límite de intentos en login, registro y canje del escáner</span><span class="sev alto">Alto</span></div>
+    <dl>
+      <dt>Dónde</dt><dd><code>routes/api.php:21-24</code></dd>
+      <dt>Qué pasa</dt><dd>No hay <code>throttle</code> en ninguna ruta. Se puede probar contraseñas sin freno y crear empresas basura en masa.</dd>
+      <dt>Arreglo</dt><dd><code>throttle</code> por IP y correo (por ejemplo, 5 intentos por minuto en login y canje; pocos registros por hora e IP).</dd>
+    </dl>
+  </div>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">A3</span><span class="tit">Las sesiones no vencen nunca y siguen vivas al desactivar o cambiar la clave</span><span class="sev alto">Alto</span></div>
+    <dl>
+      <dt>Dónde</dt><dd><code>config/sanctum.php:50</code> (<code>expiration =&gt; null</code>), <code>UserController.php:53</code>, <code>apps/web/src/lib/api.ts</code></dd>
+      <dt>Qué pasa</dt><dd>El token dura para siempre y vive en <code>localStorage</code>. Desactivar a alguien desde “editar” o cambiarle la contraseña no cierra sus sesiones, y ninguna ruta revisa el campo <code>activo</code>.</dd>
+      <dt>Arreglo</dt><dd>Expiración (por ejemplo, 12 horas o el turno); revocar tokens al desactivar o cambiar la clave; middleware que rechace usuarios inactivos.</dd>
+    </dl>
+  </div>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">A4</span><span class="tit">El teléfono-escáner recibe una llave completa de la cuenta</span><span class="sev alto">Alto</span></div>
+    <dl>
+      <dt>Dónde</dt><dd><code>app/Http/Controllers/Api/ScannerController.php:46</code></dd>
+      <dt>Qué pasa</dt><dd>Al canjear el código, el teléfono recibe un token con todos los permisos de quien lo generó y sin vencimiento. Si el administrador emparejó un celular y este se pierde, quien lo tenga administra el sistema.</dd>
+      <dt>Arreglo</dt><dd><code>createToken('scanner', ['scanner:scan'])</code>, exigir esa habilidad solo en <code>/scanner/scan</code>, bloquear el resto de rutas para ese token y darle vencimiento de un turno.</dd>
+    </dl>
+  </div>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">A5</span><span class="tit">Los roles solo existen en el menú, no en el servidor</span><span class="sev alto">Alto</span></div>
+    <dl>
+      <dt>Dónde</dt><dd>Solo <code>UserController.php:94</code> revisa el rol. Productos, inventario, tasas, análisis y monitor no lo hacen.</dd>
+      <dt>Qué pasa</dt><dd>Un cajero puede, llamando a la API o escribiendo la URL, cambiar precios, importar productos, ajustar el stock (y tapar un faltante), cambiar la tasa y ver costos y márgenes del negocio.</dd>
+      <dt>Arreglo</dt><dd>Policies o Gates por rol en cada ruta (por ejemplo, un middleware <code>rol:admin,gerente</code>) y el mismo control en <code>ProtectedRoute</code> de la web.</dd>
+    </dl>
+  </div>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">A6</span><span class="tit">Cuentas de prueba con contraseña conocida</span><span class="sev alto">Alto</span></div>
+    <dl>
+      <dt>Dónde</dt><dd><code>database/seeders/DatabaseSeeder.php:45-73</code></dd>
+      <dt>Qué pasa</dt><dd><code>admin@crotone.com</code> y <code>caja@crotone.com</code> con la clave <code>password</code>. Si se siembra la base en el servidor del cliente, cualquiera entra como administrador. La clave mínima es de 6 caracteres.</dd>
+      <dt>Arreglo</dt><dd>No sembrar datos demo en producción; crear el primer admin con un comando que pida la clave; mínimo 8 caracteres y cambio obligatorio en el primer ingreso.</dd>
+    </dl>
+  </div>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">A7</span><span class="tit">Configuración de desarrollo lista para filtrar secretos</span><span class="sev alto">Alto</span></div>
+    <dl>
+      <dt>Dónde</dt><dd><code>.env</code>: <code>APP_ENV=local</code>, <code>APP_DEBUG=true</code>, <code>LOG_LEVEL=debug</code>, MySQL con <code>root</code> sin clave</dd>
+      <dt>Qué pasa</dt><dd>Si se instala así, cualquier error muestra la traza completa con variables de entorno, y la base queda abierta a cualquier proceso de la máquina.</dd>
+      <dt>Arreglo</dt><dd><code>.env</code> de producción con <code>APP_DEBUG=false</code>, usuario de base de datos propio con clave y permisos mínimos, HTTPS.</dd>
+    </dl>
+  </div>
+
+  <h3>Medios</h3>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">M1</span><span class="tit">La tasa se descarga sin verificar el certificado HTTPS</span><span class="sev medio">Medio</span></div>
+    <dl>
+      <dt>Dónde</dt><dd><code>app/Services/TasaService.php:34</code> (<code>Http::withoutVerifying()</code>)</dd>
+      <dt>Qué pasa</dt><dd>El comentario dice que el dato “no es sensible”, pero la tasa decide cuánto se cobra en bolívares. Alguien en la misma red puede inyectar una tasa falsa.</dd>
+      <dt>Arreglo</dt><dd>Actualizar el bundle de certificados de PHP (<code>curl.cainfo</code> en <code>php.ini</code>), quitar <code>withoutVerifying</code> y rechazar variaciones anormales.</dd>
+    </dl>
+  </div>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">M2</span><span class="tit">Listados sin tope de tamaño (<code>per_page</code>)</span><span class="sev medio">Medio</span></div>
+    <dl>
+      <dt>Dónde</dt><dd><code>VentaController.php:36</code>, <code>ProductoController.php:40</code>, <code>ClienteController.php</code>, <code>TasaCambioController.php:18</code></dd>
+      <dt>Qué pasa</dt><dd><code>?per_page=1000000</code> obliga a cargar todo en memoria: una forma fácil de tumbar el servidor.</dd>
+      <dt>Arreglo</dt><dd><code>min($request-&gt;integer('per_page', 30), 100)</code>.</dd>
+    </dl>
+  </div>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">M3</span><span class="tit">Comprobantes bancarios accesibles por URL pública</span><span class="sev medio">Medio</span></div>
+    <dl>
+      <dt>Dónde</dt><dd><code>SuscripcionController.php:67</code></dd>
+      <dt>Qué pasa</dt><dd>Las capturas de transferencias y pagos móviles (con datos bancarios) quedan en <code>/storage/comprobantes/...</code> sin autenticación.</dd>
+      <dt>Arreglo</dt><dd>Disco privado (ver C2).</dd>
+    </dl>
+  </div>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">M4</span><span class="tit">Notas de crédito y de entrega mezcladas con las ventas, y sin anulación</span><span class="sev medio">Medio</span></div>
+    <dl>
+      <dt>Dónde</dt><dd><code>FacturacionService.php:75-87</code></dd>
+      <dt>Qué pasa</dt><dd>Una “nota de crédito” se registra como una venta más: descuenta stock (en vez de devolverlo) y consume el mismo correlativo que las facturas. No existe forma de anular una venta con rastro.</dd>
+      <dt>Arreglo</dt><dd>Flujos separados: anulación con motivo y autorización, devolución que reingresa stock, correlativos por tipo de documento.</dd>
+    </dl>
+  </div>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">M5</span><span class="tit">Dependencias con vulnerabilidades conocidas</span><span class="sev medio">Medio</span></div>
+    <dl>
+      <dt>Dónde</dt><dd><code>composer audit</code>: 43 avisos (laravel/framework, guzzle, dompdf, symfony, league/commonmark). <code>npm audit</code>: 8 avisos, 6 altos (axios, react-router, xlsx, postcss...).</dd>
+      <dt>Qué pasa</dt><dd>Lo más relevante para Boxy: <code>xlsx</code> 0.18.5 (contaminación de prototipos al leer un Excel manipulado, sin arreglo en npm) y los avisos de dompdf, que genera los PDF.</dd>
+      <dt>Arreglo</dt><dd><code>composer update</code> dentro de Laravel 11, <code>npm audit fix</code>, y cambiar <code>xlsx</code> por la versión que SheetJS publica en su propio CDN (0.20.3 o superior).</dd>
+    </dl>
+  </div>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">M6</span><span class="tit">Registro público sin verificación</span><span class="sev medio">Medio</span></div>
+    <dl>
+      <dt>Dónde</dt><dd><code>RegistroController.php</code> (<code>POST /api/registro</code>)</dd>
+      <dt>Qué pasa</dt><dd>Sin captcha ni verificación de correo; combinado con C1, cualquiera obtiene una cuenta válida en segundos. Si vendes una instalación para una sola tienda, este registro no debería existir.</dd>
+      <dt>Arreglo</dt><dd>Para una sola tienda: desactivar la ruta y la landing. Para SaaS: verificación de correo, captcha y <code>throttle</code>.</dd>
+    </dl>
+  </div>
+
+  <div class="hallazgo">
+    <div class="cab"><span class="id">M7</span><span class="tit">IGTF cobrado de más cuando el cliente paga con billete grande</span><span class="sev medio">Medio</span></div>
+    <dl>
+      <dt>Dónde</dt><dd><code>FacturacionService.php:189-190</code></dd>
+      <dt>Qué pasa</dt><dd>El 3&nbsp;% se calcula sobre todo lo entregado en divisas, no sobre lo que efectivamente cancela la compra. Si la cuenta es de 10 dólares y pagan con 20, se cobra IGTF sobre 20. No hay manejo de vuelto.</dd>
+      <dt>Arreglo</dt><dd>IGTF sobre el monto aplicado a la deuda; registrar el vuelto (en Bs o en divisas) como parte del pago.</dd>
+    </dl>
+  </div>
+
+  <h3>Bajos e higiene</h3>
+  <div class="hallazgo">
+    <div class="cab"><span class="id">B1</span><span class="tit">Mensaje de login que revela cuentas válidas</span><span class="sev bajo">Bajo</span></div>
+    <dl><dt>Dónde</dt><dd><code>AuthController.php:30</code></dd><dt>Qué pasa</dt><dd>“Usuario desactivado” solo aparece si la clave era correcta. Usar el mismo mensaje genérico en ambos casos.</dd></dl>
+  </div>
+  <div class="hallazgo">
+    <div class="cab"><span class="id">B2</span><span class="tit">El super-admin rompe pantallas de empresa</span><span class="sev bajo">Bajo</span></div>
+    <dl><dt>Dónde</dt><dd><code>MonitorController.php:41</code></dd><dt>Qué pasa</dt><dd>Pasa el middleware de licencia sin empresa y las consultas que esperan un entero fallan con error 500. Bloquear esas rutas para el super-admin.</dd></dl>
+  </div>
+  <div class="hallazgo">
+    <div class="cab"><span class="id">B3</span><span class="tit">Sin cabeceras de seguridad ni pruebas automáticas</span><span class="sev bajo">Bajo</span></div>
+    <dl><dt>Dónde</dt><dd>Toda la app; <code>tests/</code> solo trae los ejemplos de Laravel</dd><dt>Qué pasa</dt><dd>No hay CSP, HSTS ni pruebas del motor de facturación, que es justo lo que no puede fallar. Añadir cabeceras en el servidor web y pruebas de cálculo de IVA, IGTF, descuentos y stock.</dd></dl>
+  </div>
+
+  <div class="aviso bien">
+    <span class="rotulo">Lo que está bien hecho</span>
+    <p>Consultas con parámetros (sin inyección SQL a la vista), contraseñas con bcrypt, casi todos los recursos verifican que pertenezcan a la empresa del usuario, transacciones y bloqueos en ventas y stock, plantilla de PDF sin HTML sin escapar, y fotos de productos limitadas a JPG, PNG y WebP.</p>
+  </div>
+</section>
+
+<!-- ============================ SENIAT ============================= -->
+<section class="seccion" id="seniat">
+  <div class="cinta"><span class="indicador" style="background:var(--amarillo)"></span><span class="capitulo">02 &middot; SENIAT</span></div>
+  <h2>SENIAT y facturación fiscal</h2>
+  <p class="entradilla">Tu pregunta tiene una respuesta más sencilla que hace dos meses: la homologación de software ya no existe. Pero eso no convierte los PDF de Boxy en facturas válidas.</p>
+
+  <h3>Qué dice la norma hoy (septiembre de 2026)</h3>
+  <table>
+    <thead><tr><th style="width:30%">Norma</th><th style="width:14%">Estado</th><th>Qué regula y qué implica para Boxy</th></tr></thead>
+    <tbody>
+      <tr><td><strong>PA SNAT/2024/000121</strong><br>Proveedores de sistemas de facturación</td><td><span class="si">Derogada</span></td><td>Exigía homologar y registrar ante el SENIAT los programas usados para facturar. La derogó la <strong>PA SNAT/2026/00084</strong> (Gaceta Oficial 43.435, 12-08-2026). No hay trámite de homologación de software que hacer.</td></tr>
+      <tr><td><strong>PA SNAT/2018/00141</strong><br>Máquinas fiscales</td><td><span class="parte">Vigente</span></td><td>Los comercios al detal con atención directa al público, como abastos y minimarkets, emiten sus facturas con una máquina fiscal homologada, con dispositivo de transmisión al SENIAT. La homologada es la impresora, no el programa que la usa.</td></tr>
+      <tr><td><strong>PA SNAT/2024/000102</strong><br>Medios digitales</td><td><span class="parte">Vigente</span></td><td>Facturas digitales emitidas a través de una imprenta digital autorizada, que asigna el número de control. Obligatoria para quien vende solo por internet; opcional para otros casos.</td></tr>
+      <tr><td><strong>PA SNAT/2011/00071</strong><br>Normas generales de facturación</td><td><span class="parte">Vigente</span></td><td>Requisitos de toda factura y uso de formatos y formas libres impresos por imprentas autorizadas, que son las que asignan el número de control.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Dónde está Boxy</h3>
+  <p>Boxy calcula bien lo que la factura necesita (base, IVA por alícuota, IGTF y montos en bolívares a tasa BCV), pero <strong>el documento que produce no es fiscal</strong>: el PDF se titula “factura” y muestra un “N° de control” que el propio sistema inventa en <code>FacturacionService.php:75-78</code>. El número de control lo asigna una imprenta autorizada, una imprenta digital o lo maneja la máquina fiscal; nunca el programa del comercio. Si la tienda entrega ese PDF como factura, se expone a multas y cierre del local por emitir facturas sin requisitos.</p>
+
+  <h3>¿Si ellos son los dueños, no hay problema?</h3>
+  <p>En lo esencial tienes razón: <strong>la obligación de facturar correctamente es del comercio</strong>, no de quien escribió el programa, y ya no hay homologación que tramitar. Tu riesgo real es otro: que el comprador diga que le vendiste un “sistema de facturación fiscal” y te reclame cuando el SENIAT le multe. Eso se evita así:</p>
+
+  <ol class="pasos">
+    <li><p>Que el sistema no parezca fiscal</p><p>Cambiar el título del PDF a “Nota de entrega” o “Comprobante no fiscal”, con la leyenda <em>Sin validez fiscal</em>; renombrar el “N° de control” a “N° interno”; y el botón “Emitir factura” a “Cobrar”. Son cambios de texto, de menos de una hora.</p></li>
+    <li><p>Que la venta no lo prometa</p><p>La presentación que te entrego ya lo dice así: los documentos fiscales los emite la máquina fiscal del comercio, y la integración con ella es una ampliación que se cotiza aparte.</p></li>
+    <li><p>Que el contrato lo deje por escrito</p><p>El sistema se entrega tal cual, sin homologación ni certificación fiscal; el cumplimiento tributario (máquina fiscal, libros de compras y ventas, declaraciones) corresponde al comprador; limitación de responsabilidad; y si le cedes el código fuente, que la cesión quede explícita.</p></li>
+    <li><p>Ofrecer la integración como servicio aparte, o que la contraten ellos</p><p>Lo normal en Venezuela es un programa administrativo que manda cada venta a una impresora fiscal homologada (The Factory HKA, Bixolon y otras). Como Boxy funciona en el navegador, hace falta un pequeño servicio local en la PC de la caja que hable con la impresora. Si el comprador se hace dueño del código, puede encargarlo a quien quiera.</p></li>
+  </ol>
+
+  <div class="aviso ojo">
+    <span class="rotulo">Confirma con un profesional</span>
+    <p>Esto resume la normativa publicada y comentarios de firmas del área; no es asesoría legal. Antes de firmar, que un contador o abogado tributario revise el contrato y confirme qué medio de facturación le corresponde al negocio del comprador según su actividad y si es contribuyente especial.</p>
+  </div>
+</section>
+
+<!-- =========================== FALTANTES =========================== -->
+<section class="seccion" id="faltantes">
+  <div class="cinta"><span class="indicador" style="background:var(--azul)"></span><span class="capitulo">03 &middot; Faltantes</span></div>
+  <h2>Lo que le falta para un abasto</h2>
+  <p class="entradilla">Ordenado por lo que un dueño de abasto pregunta primero. <span class="prio p1">Prioridad 1</span> es lo que casi seguro pedirá antes de usarlo; <span class="prio p2">Prioridad 2</span>, lo que pedirá el primer mes; <span class="prio p3">Prioridad 3</span>, lo que lo diferencia.</p>
+
+  <h3>Operación de la caja</h3>
+  <table>
+    <thead><tr><th style="width:30%">Función</th><th style="width:14%">Prioridad</th><th>Por qué</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Apertura y cierre de caja</strong></td><td><span class="prio p1">1</span></td><td>Fondo inicial, cuadre por método de pago (efectivo Bs, dólares, pago móvil, punto), diferencias y reporte por cajero y turno. Hoy no existe y es lo primero que se revisa al final del día.</td></tr>
+      <tr><td><strong>Anular ventas y devoluciones</strong></td><td><span class="prio p1">1</span></td><td>Con motivo, clave de supervisor y reingreso al inventario. Hoy una venta mal hecha no se puede deshacer.</td></tr>
+      <tr><td><strong>Vuelto y validación de pagos</strong></td><td><span class="prio p1">1</span></td><td>Que no se pueda cerrar una venta sin cobrar completa; vuelto en Bs o en dólares; referencia obligatoria en pago móvil.</td></tr>
+      <tr><td><strong>Ticket en impresora térmica</strong></td><td><span class="prio p1">1</span></td><td>Los abastos imprimen en rollo de 58 u 80 mm, no en A4.</td></tr>
+      <tr><td><strong>Impresora fiscal</strong></td><td><span class="prio p1">1</span></td><td>Ver apartado 02. Puede ser un desarrollo aparte, pero el comprador lo va a preguntar.</td></tr>
+      <tr><td><strong>Productos por peso con balanza</strong></td><td><span class="prio p2">2</span></td><td>Charcutería, verduras y carnes: leer etiquetas de balanza (códigos que empiezan con 2 y traen peso o precio).</td></tr>
+      <tr><td><strong>Varias cajas identificadas</strong></td><td><span class="prio p2">2</span></td><td>Saber desde qué caja se hizo cada venta, además del cajero.</td></tr>
+      <tr><td><strong>Funcionar sin internet</strong></td><td><span class="prio p2">2</span></td><td>Con los cortes de luz e internet, la caja no puede depender de un servidor en la nube. O se instala en la tienda, o la caja guarda ventas y sincroniza después.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Inventario y compras</h3>
+  <table>
+    <thead><tr><th style="width:30%">Función</th><th style="width:14%">Prioridad</th><th>Por qué</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Proveedores y compras</strong></td><td><span class="prio p1">1</span></td><td>Registrar la factura del proveedor, sumar stock, actualizar el costo (costo promedio) y llevar cuentas por pagar.</td></tr>
+      <tr><td><strong>Cambio masivo de precios</strong></td><td><span class="prio p1">1</span></td><td>Subir un porcentaje a una categoría o a todo, o recalcular por margen objetivo. En Venezuela los precios se mueven seguido.</td></tr>
+      <tr><td><strong>Vencimientos y lotes</strong></td><td><span class="prio p2">2</span></td><td>Lácteos, charcutería y medicinas: alertas de productos por vencer.</td></tr>
+      <tr><td><strong>Precio al mayor</strong></td><td><span class="prio p2">2</span></td><td>Listas de precio (detal y mayor) o descuento por cantidad.</td></tr>
+      <tr><td><strong>Promociones y combos</strong></td><td><span class="prio p3">3</span></td><td>El monitor ya sugiere combos, pero no se pueden crear ni aplicar en la caja.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Clientes (lo que pidió el comprador: un CRM)</h3>
+  <table>
+    <thead><tr><th style="width:30%">Función</th><th style="width:14%">Prioridad</th><th>Por qué</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Fiado y cuentas por cobrar</strong></td><td><span class="prio p1">1</span></td><td>Muy común en abastos: venta a crédito, límite por cliente, abonos y estado de cuenta.</td></tr>
+      <tr><td><strong>Ficha del cliente con historial</strong></td><td><span class="prio p1">1</span></td><td>Qué compra, cada cuánto, ticket promedio, última visita y cuánto debe. Hoy la pantalla de clientes solo registra datos de contacto.</td></tr>
+      <tr><td><strong>WhatsApp</strong></td><td><span class="prio p2">2</span></td><td>Enviar el comprobante, recordar deudas y mandar ofertas. Es el canal que usan los clientes en Venezuela.</td></tr>
+      <tr><td><strong>Fidelización</strong></td><td><span class="prio p3">3</span></td><td>Puntos o descuentos para clientes frecuentes, y segmentos: mejores clientes, clientes que dejaron de venir, cumpleaños.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Administración y producto</h3>
+  <table>
+    <thead><tr><th style="width:30%">Función</th><th style="width:14%">Prioridad</th><th>Por qué</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Pantallas para teléfono</strong></td><td><span class="prio p1">1</span></td><td>El menú lateral no se adapta (<code>apps/web/src/components/Layout.tsx:85</code>): en un celular todo queda comprimido. El dueño va a querer ver el monitor desde el teléfono.</td></tr>
+      <tr><td><strong>Datos de la empresa</strong></td><td><span class="prio p1">1</span></td><td>No hay pantalla para cambiar RIF, razón social, dirección ni logo: hoy solo se cargan por base de datos.</td></tr>
+      <tr><td><strong>Respaldos automáticos</strong></td><td><span class="prio p1">1</span></td><td>Copia diaria de la base de datos y forma de restaurarla. Sin eso, un disco dañado es perder el negocio.</td></tr>
+      <tr><td><strong>Reportes para el contador</strong></td><td><span class="prio p2">2</span></td><td>Ventas por alícuota, IGTF cobrado y cierre diario, exportables a Excel. El libro de ventas oficial sale de la máquina fiscal.</td></tr>
+      <tr><td><strong>Registro de acciones sensibles</strong></td><td><span class="prio p2">2</span></td><td>Quién cambió un precio, ajustó stock o anuló una venta, y cuándo.</td></tr>
+      <tr><td><strong>Sucursales desde la pantalla</strong></td><td><span class="prio p3">3</span></td><td>La base de datos ya las contempla, pero no se pueden crear ni administrar desde la web.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="aviso ojo">
+    <span class="rotulo">Detalles del modo SaaS que conviene saber</span>
+    <p>Si instalas el sistema desde cero, la empresa demo queda bloqueada con error 402: el seeder del repositorio no crea planes, suscripción ni super-admin (lo que sí dice <code>CLAUDE.md</code>). Además, los límites de cada plan (usuarios, productos, sucursales) no se aplican en ningún lado, y el periodo de gracia nunca se activa: al vencer, la empresa se bloquea el mismo día. Si vendes una instalación para una sola tienda, lo más limpio es desactivar el registro, la landing y las licencias.</p>
+  </div>
+</section>
+
+<!-- ============================== PLAN ============================= -->
+<section class="seccion" id="plan">
+  <div class="cinta"><span class="indicador" style="background:var(--verde)"></span><span class="capitulo">04 &middot; Plan</span></div>
+  <h2>Plan antes de vender</h2>
+  <p class="entradilla">En este orden. Las dos primeras etapas son las que separan un demo bonito de un sistema que puedes entregar sin quedar expuesto.</p>
+
+  <ol class="pasos">
+    <li><p>Seguridad y textos no fiscales</p><p>Corregir C1, C2, C3 y A1 a A7; tope en <code>per_page</code>; actualizar dependencias; rotular los comprobantes como no fiscales; seeder de producción sin claves conocidas; <code>.env</code> de producción.</p></li>
+    <li><p>Lo mínimo de un abasto</p><p>Cierre de caja por turno, anulación y devolución con supervisor, validación de pagos con vuelto, permisos por rol en el servidor, ticket térmico y pantalla de datos de la empresa.</p></li>
+    <li><p>Lo que pide un CRM</p><p>Ficha del cliente con historial, fiado con abonos y estado de cuenta, y envío por WhatsApp.</p></li>
+    <li><p>Operación diaria</p><p>Compras a proveedores con costo promedio, cambio masivo de precios, diseño para teléfono y respaldos automáticos.</p></li>
+    <li><p>Ampliaciones que se cotizan aparte</p><p>Integración con impresora fiscal, balanza, vencimientos, promociones, fidelización y modo sin conexión.</p></li>
+  </ol>
+
+  <div class="aviso bien">
+    <span class="rotulo">Qué se entregó con este informe</span>
+    <p><strong>Boxy-Presentacion-Comercial.pdf</strong>: 17 diapositivas para el comprador, con capturas reales del sistema. La fuente editable (HTML y capturas) queda en <code>entregables/presentacion/</code> por si quieres añadir tus datos de contacto o precios y volver a generar el PDF.</p>
+  </div>
+
+  <h3>Fuentes consultadas</h3>
+  <ul class="lista fuentes">
+    <li>Moore Venezuela, “El SENIAT deroga la regulación de las condiciones y requisitos para los proveedores de sistemas informáticos de facturación”: https://www.moore-venezuela.com/el-seniat-deroga-la-regulacion-de-las-condiciones-y-requisitos-para-los-proveedores-de-sistemas-informaticos-de-facturacion/</li>
+    <li>Banca y Negocios, “SENIAT eliminó obligación de homologar los sistemas informáticos de facturación” (14-08-2026): https://www.bancaynegocios.com/seniat-elimino-obligacion-de-homologar-los-sistemas-informaticos-de-facturacion/</li>
+    <li>Acceso a la Justicia, “Seniat permite el uso de cualquier sistema contable informático sin trámite previo”: https://accesoalajusticia.org/seniat-permite-el-uso-de-cualquier-sistema-contable/</li>
+    <li>Gesco Software, “Providencia SNAT/2026/00084 en Gaceta Oficial N.º 43.435”: https://www.gescosoftware.com/conoce-los-detalles-de-la-nueva-providencia-snat-2026-00084-en-venezuela/</li>
+    <li>Tu Gaceta Oficial, texto de la Providencia SNAT/2024/000102 (medios digitales): https://tugacetaoficial.com/leyes/texto-providencia-seniat-utilizacion-de-medios-digitales-para-emision-de-facturas-y-otros-documentos-17-12-2025/</li>
+    <li>Gálac, “Facturación en Venezuela: cómo facturar según el SENIAT” (máquinas fiscales en comercio al detal): https://galac.com/galac-blog/facturacion-en-venezuela/</li>
+  </ul>
+</section>
+
+</body>
+</html>
