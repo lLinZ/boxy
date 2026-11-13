@@ -1,64 +1,50 @@
-# Crotone
+# Boxy
 
-Sistema de **inventario y facturación** para minimarket (Venezuela / SENIAT), pensado
-para escalar a **franquicias** (multi-empresa / multi-sucursal).
+Punto de venta con **inventario, caja y clientes** para abastos y minimarkets de Venezuela.
+Multi-empresa y multi-sucursal; funciona como **SaaS** (licencia mensual) o **dedicado**
+(una sola tienda). Los comprobantes son **documentos no fiscales**; la factura fiscal la
+emite una impresora fiscal homologada (opcional, ver `docs/IMPRESORA-FISCAL.md`).
 
 ## Estructura (monorepo)
 
 ```
-crotone/
+boxy/
 ├── apps/
-│   ├── api/    → Backend Laravel 11 + MySQL (API REST, Sanctum, motor de facturación)
-│   ├── web/    → Frontend React + Vite + HeroUI (POS de caja, inventario, ventas)
-│   └── mobile/ → App React Native (pendiente)
+│   ├── api/    → Laravel 12 + MySQL (API REST, Sanctum)
+│   └── web/    → React 19 + Vite + HeroUI (landing, POS, inventario, panel)
+├── docs/       → DESPLIEGUE.md, IMPRESORA-FISCAL.md
+└── scripts/
 ```
 
-## Características fiscales (Venezuela)
+## Lo que maneja
 
-- **Doble moneda** USD/Bs con tasa **BCV** (montos canónicos en USD).
-- **IVA** por producto: general 16 %, reducido 8 %, exento 0 %.
-- **IGTF** 3 % automático sobre pagos en divisas (USD / Zelle).
-- **Correlativos** (número de factura + número de control) por sucursal.
-- **Kardex** de inventario auditable por cada movimiento.
+- **Multi-tasa** BCV (oficial) + USDT; montos canónicos en USD, cobro en Bs a tasa BCV.
+- **IVA** 16 % / 8 % / exento e **IGTF** 3 % solo sobre lo que pagan las divisas.
+- **Caja por turnos** con arqueo, anulaciones y devoluciones con PIN de supervisor.
+- **Kardex** en cada movimiento, compras con costo promedio, fiado y puntos.
 
-## Requisitos
+## Puesta en marcha (desarrollo)
 
-- PHP 8.2+ y Composer (incluidos en XAMPP)
-- MySQL / MariaDB (XAMPP)
-- Node.js 18+ y npm
-
-## Puesta en marcha
-
-### 1. Base de datos
-Inicia MySQL desde el panel de XAMPP (o `C:\xampp\mysql\bin\mysqld.exe`).
-La base se llama `crotone` (ya creada).
-
-### 2. Backend (API)
 ```bash
 cd apps/api
-php artisan migrate:fresh --seed   # esquema + datos demo
+composer install && cp .env.example .env && php artisan key:generate
+php artisan migrate:fresh --seed   # esquema + cuenta de prueba "Boxy Demo Market"
 php artisan serve                  # http://127.0.0.1:8000
-```
 
-### 3. Frontend (Web)
-```bash
 cd apps/web
 npm install
-npm run dev                        # http://localhost:5173
+npm run dev                        # http://localhost:5173 (proxy /api → :8000)
 ```
-La web usa un proxy de Vite hacia la API (`/api` → `127.0.0.1:8000`), sin problemas de CORS.
 
-## Acceso de prueba
+## Cuenta de prueba
 
-| Campo | Valor |
-|-------|-------|
-| Correo | `admin@crotone.com` |
-| Clave  | `password` |
+`CuentaPruebaSeeder` crea la empresa **Boxy Demo Market** con catálogo, clientes, plan
+Franquicia activo y un admin. El correo sale de `BOXY_DEMO_EMAIL` y la clave de
+`BOXY_DEMO_PASSWORD` en `apps/api/.env` (si falta, se genera y se muestra una vez).
+**Nunca pongas esa clave en el código.** En un servidor:
 
-## API (resumen)
+```bash
+php artisan db:seed --class=CuentaPruebaSeeder
+```
 
-`POST /api/login` · `GET /api/me` · `POST /api/logout`
-`GET/POST/PUT/DELETE /api/productos` · `/api/categorias` · `/api/clientes`
-`GET /api/inventario` · `POST /api/inventario/movimiento` · `GET /api/inventario/kardex/{producto}`
-`GET /api/tasas/vigente` · `POST /api/tasas`
-`GET /api/ventas` · `GET /api/ventas/{id}` · `POST /api/ventas` (motor de facturación)
+Despliegue en producción y venta de licencias: `docs/DESPLIEGUE.md`.

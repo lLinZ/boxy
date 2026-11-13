@@ -9,7 +9,7 @@ export function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   // Solo en desarrollo se precargan las credenciales de la demo
-  const [email, setEmail] = useState(import.meta.env.DEV ? 'admin@crotone.com' : '')
+  const [email, setEmail] = useState(import.meta.env.DEV ? 'aristides@boxy.com' : '')
   const [password, setPassword] = useState(import.meta.env.DEV ? 'password' : '')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)

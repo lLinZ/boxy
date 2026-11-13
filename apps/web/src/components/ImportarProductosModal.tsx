@@ -105,7 +105,7 @@ export function ImportarProductosModal({ isOpen, onOpenChange, onImported }: Pro
     ])
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Productos')
-    XLSX.writeFile(wb, 'plantilla_productos_crotone.xlsx')
+    XLSX.writeFile(wb, 'plantilla_productos_boxy.xlsx')
   }
 
   async function leerArchivo(file: File) {

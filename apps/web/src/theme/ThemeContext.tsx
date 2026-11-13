@@ -40,7 +40,7 @@ interface ThemeCtx {
 
 const Ctx = createContext<ThemeCtx | undefined>(undefined)
 
-const storageKey = (userId?: number) => `crotone_theme_${userId ?? 'guest'}`
+const storageKey = (userId?: number) => `boxy_theme_${userId ?? 'guest'}`
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()

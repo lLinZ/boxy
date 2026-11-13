@@ -62,10 +62,10 @@ Ejemplo con Nginx:
 ```nginx
 server {
     listen 443 ssl http2;
-    server_name boxy.midominio.com;
+    server_name boxy.venz.cloud;
     # certificados (Let's Encrypt u otro)
-    ssl_certificate     /etc/letsencrypt/live/boxy.midominio.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/boxy.midominio.com/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/boxy.venz.cloud/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/boxy.venz.cloud/privkey.pem;
 
     root /var/www/boxy/apps/web/dist;
     index index.html;
@@ -128,13 +128,14 @@ Laravel necesita correr `php artisan schedule:run` **cada minuto**. Eso dispara:
 - [ ] `APP_ENV=production` y `APP_DEBUG=false`
 - [ ] Usuario de base de datos propio, con clave
 - [ ] HTTPS activo
-- [ ] `php artisan db:seed` **sin** la demo (verificar que no existe `admin@crotone.com`)
+- [ ] `php artisan db:seed` **sin** la demo (verificar que no existen `gerente@boxy.com` ni
+      `caja@boxy.com`, que usan la clave `password`)
 - [ ] Tarea programada corriendo (ver `storage/logs` a las 9:00 a. m.)
 - [ ] `BOXY_RESPALDOS_COPIAR_A` apuntando fuera del disco de la PC
 - [ ] Datos de la empresa, logo y ancho del ticket en **Mi empresa**
 - [ ] Cada usuario con su clave; gerentes con PIN de supervisor
 - [ ] Ticket de prueba impreso en la térmica
-- [ ] `php artisan test` en verde (usa la base `crotone_test`)
+- [ ] `php artisan test` en verde (usa la base `boxy_test`)
 - [ ] Revisar de vez en cuando `apps/api/storage/logs/seguridad-*.log`: ingresos fallidos,
       PIN de supervisor rechazados, cambios de rol, tasas cargadas a mano y respaldos
       descargados (se guarda 180 días; `LOG_SEGURIDAD_DIAS` lo cambia)
@@ -144,3 +145,25 @@ Laravel necesita correr `php artisan schedule:run` **cada minuto**. Eso dispara:
 Los comprobantes, tickets y PDF de Boxy dicen "documento no fiscal". Si la tienda debe
 emitir factura fiscal (comercio al detal), necesita una impresora fiscal homologada;
 ver `docs/IMPRESORA-FISCAL.md`.
+
+## 10. Vender suscripciones (modo SaaS)
+
+Para cobrar licencias mensuales a varias tiendas en un mismo servidor:
+
+- [ ] `.env`: `BOXY_MODO=saas`. `BOXY_REGISTRO_PUBLICO=true` si la landing deja crear
+      cuentas con prueba gratis; `false` si las cuentas las creas tú desde **Panel Boxy**.
+- [ ] Datos reales de cobro: `BOXY_COBRO_PAGO_MOVIL`, `BOXY_COBRO_TRANSFERENCIA`,
+      `BOXY_COBRO_USDT`, `BOXY_COBRO_BINANCE`, `BOXY_COBRO_ZELLE` (texto libre; los vacíos no
+      se muestran). El cliente los ve en **Mi licencia**.
+- [ ] Contacto comercial: `BOXY_VENTAS_WHATSAPP` (solo dígitos, ej. `584140000000`) y/o
+      `BOXY_VENTAS_EMAIL`. Activa "Hablar con ventas" en la landing.
+- [ ] Precios y límites de los planes en **Panel Boxy → Planes** (Básico, Minimarket, Franquicia).
+- [ ] `php artisan config:cache` después de cambiar el `.env`.
+- [ ] Cuenta para enseñar el sistema: `BOXY_DEMO_EMAIL` y `BOXY_DEMO_PASSWORD` en el `.env` y
+      `php artisan db:seed --class=CuentaPruebaSeeder` (empresa "Boxy Demo Market", plan
+      Franquicia activo por un año).
+
+Flujo de una venta: el cliente se registra (14 días gratis) o lo creas en **Panel Boxy →
+Empresas**; paga por uno de los medios y lo reporta en **Mi licencia**; tú lo confirmas en
+**Panel Boxy → Pagos** y la licencia se extiende. Si no paga, pasa a gracia y luego se
+suspende (la API responde 402 y la tienda no puede vender hasta pagar).

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// Planes de licencia del SaaS (lo que paga cada empresa para usar Crotone).
+// Planes de licencia del SaaS (lo que paga cada empresa para usar Boxy).
 return new class extends Migration
 {
     public function up(): void

@@ -31,7 +31,7 @@ export function ScannerPage() {
 
   // Cliente axios propio: el token del escáner vive solo en esta página
   // (sessionStorage), sin tocar la sesión normal de la web.
-  const tokenRef = useRef<string | null>(sessionStorage.getItem('crotone_scanner_token'))
+  const tokenRef = useRef<string | null>(sessionStorage.getItem('boxy_scanner_token'))
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const cooldownRef = useRef<{ codigo: string; hasta: number }>({ codigo: '', hasta: 0 })
   // El código es de un solo uso: evita el doble canje de StrictMode (efecto x2 en dev)
@@ -83,7 +83,7 @@ export function ScannerPage() {
       .post('/api/scanner/canjear', { codigo: code }, { headers: { Accept: 'application/json' } })
       .then((r) => {
         tokenRef.current = r.data.token
-        sessionStorage.setItem('crotone_scanner_token', r.data.token)
+        sessionStorage.setItem('boxy_scanner_token', r.data.token)
         setUsuario(r.data.usuario)
         setEstado('conectado')
       })

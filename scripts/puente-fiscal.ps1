@@ -12,7 +12,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── Configuración ──
-$Api      = 'https://boxy.midominio.com/api'   # dirección de la API de Boxy
+$Api      = 'https://boxy.venz.cloud/api'   # dirección de la API de Boxy
 $Clave    = 'PEGAR-AQUI-LA-CLAVE-DEL-PUENTE'   # Mi empresa → Generar clave del puente
 $IntTfhka = Join-Path $PSScriptRoot 'IntTFHKA.exe'
 $Carpeta  = $PSScriptRoot                      # donde IntTFHKA escribe Retorno.txt / Status.txt

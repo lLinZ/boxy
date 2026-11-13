@@ -22,7 +22,6 @@ import {
   Contact,
   CreditCard,
   DatabaseBackup,
-  KeyRound,
   LayoutDashboard,
   LineChart,
   LogOut,
@@ -34,9 +33,11 @@ import {
   ShoppingCart,
   Store,
   Truck,
+  UserRound,
   Users,
   Wallet,
 } from 'lucide-react'
+import { ROL_LABEL } from '../lib/permisos'
 import { useAuth } from '../auth/AuthContext'
 import { useTheme } from '../theme/ThemeContext'
 import { api } from '../lib/api'
@@ -97,6 +98,7 @@ const titulos: Record<string, string> = {
   '/respaldos': 'Respaldos',
   '/billing': 'Mi licencia',
   '/admin': 'Panel Boxy',
+  '/perfil': 'Mi perfil',
 }
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -109,7 +111,6 @@ export function Layout({ children }: { children: ReactNode }) {
   const [enLinea, setEnLinea] = useState(navigator.onLine)
   const [cola, setCola] = useState<VentaPendiente[]>([])
   const menuMovil = useDisclosure()
-  const cuenta = useDisclosure()
 
   useEffect(() => {
     api.get<TasaCambio>('/tasas/vigente').then((r) => setTasa(r.data)).catch(() => {})
@@ -150,7 +151,7 @@ export function Layout({ children }: { children: ReactNode }) {
         </div>
         <div className="min-w-0">
           <h1 className="font-display text-xl font-bold leading-none tracking-tight">Boxy</h1>
-          <p className="truncate text-tiny text-default-500">{user?.empresa?.nombre ?? user?.sucursal?.nombre ?? 'Minimarket'}</p>
+          <p className="truncate text-tiny text-default-500">{user?.empresa?.nombre ?? user?.sucursal?.nombre ?? (user?.rol === 'super_admin' ? 'Administración' : '')}</p>
         </div>
       </div>
 
@@ -181,14 +182,22 @@ export function Layout({ children }: { children: ReactNode }) {
             <div className="cursor-pointer rounded-large p-2 transition-colors hover:bg-default-100">
               <UserChip
                 name={user?.name}
-                description={user?.rol?.replace('_', ' ')}
+                description={ROL_LABEL[user?.rol ?? ''] ?? user?.rol}
                 avatarProps={{ name: user?.name?.charAt(0), size: 'sm', color: 'primary' }}
               />
             </div>
           </DropdownTrigger>
           <DropdownMenu aria-label="Cuenta">
-            <DropdownItem key="cuenta" onPress={cuenta.onOpen} startContent={<KeyRound className="h-4 w-4" />}>
-              Mi cuenta (clave y PIN)
+            <DropdownItem
+              key="perfil"
+              onPress={() => {
+                menuMovil.onClose()
+                navigate('/perfil')
+              }}
+              startContent={<UserRound className="h-4 w-4" />}
+              description="Datos, apariencia, clave y PIN"
+            >
+              Mi perfil
             </DropdownItem>
             <DropdownItem key="logout" color="danger" onPress={handleLogout} startContent={<LogOut className="h-4 w-4" />}>
               Cerrar sesión
@@ -273,9 +282,8 @@ export function Layout({ children }: { children: ReactNode }) {
         <main className="flex-1 overflow-auto p-3 sm:p-6">{children}</main>
       </div>
 
-      <CuentaModal isOpen={cuenta.isOpen} onOpenChange={cuenta.onOpenChange} />
       {/* Primer ingreso con clave temporal: se cambia antes de seguir */}
-      <CuentaModal isOpen={!!user?.debe_cambiar_clave} onOpenChange={() => {}} obligatorio />
+      <CuentaModal isOpen={!!user?.debe_cambiar_clave} />
     </div>
   )
 }

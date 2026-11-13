@@ -8,7 +8,7 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * En producción solo siembra lo imprescindible (sin claves conocidas);
-     * en desarrollo carga la demo de Crotone.
+     * en desarrollo carga la cuenta de prueba (Boxy Demo Market).
      */
     public function run(): void
     {

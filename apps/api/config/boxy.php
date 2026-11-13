@@ -30,6 +30,23 @@ return [
         'variacion_maxima' => (float) env('TASAS_VARIACION_MAXIMA', 0.5),
     ],
 
+    // Datos para cobrar las licencias (SaaS). Se muestran al cliente en "Mi licencia".
+    // Texto libre; un medio vacío no se muestra. Ej: "Banesco 0134 · J-12345678-9 · 0414-0000000".
+    'cobro' => array_filter([
+        'pago_movil' => env('BOXY_COBRO_PAGO_MOVIL'),
+        'transferencia' => env('BOXY_COBRO_TRANSFERENCIA'),
+        'usdt' => env('BOXY_COBRO_USDT'),
+        'binance' => env('BOXY_COBRO_BINANCE'),
+        'zelle' => env('BOXY_COBRO_ZELLE'),
+    ]),
+
+    // Contacto comercial que se muestra en la landing y en "Mi licencia".
+    'ventas' => array_filter([
+        // Número internacional solo dígitos, ej. 584140000000 (para wa.me).
+        'whatsapp' => preg_replace('/\D/', '', (string) env('BOXY_VENTAS_WHATSAPP', '')) ?: null,
+        'email' => env('BOXY_VENTAS_EMAIL'),
+    ]),
+
     // Duración de la sesión web (minutos). 960 = 16 h, una jornada larga de abasto.
     'sesion_minutos' => (int) env('BOXY_SESION_MINUTOS', 960),
 

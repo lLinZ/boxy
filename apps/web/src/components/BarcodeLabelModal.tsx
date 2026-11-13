@@ -24,7 +24,7 @@ export function BarcodeLabelModal({ isOpen, onOpenChange, producto }: Props) {
 
   function imprimir() {
     // El SVG lo serializa el navegador (texto ya escapado); nombre y precio se escapan aquí
-    const svg = document.querySelector('#crotone-etiqueta svg')?.outerHTML ?? ''
+    const svg = document.querySelector('#boxy-etiqueta svg')?.outerHTML ?? ''
     imprimirDocumento(
       'Etiqueta',
       'body{font-family:system-ui,sans-serif;text-align:center;margin:0;padding:16px;color:#000}' +
@@ -44,7 +44,7 @@ export function BarcodeLabelModal({ isOpen, onOpenChange, producto }: Props) {
             </ModalHeader>
             <ModalBody className="items-center">
               {valor ? (
-                <div id="crotone-etiqueta" className="rounded-large bg-white p-4 text-center text-black">
+                <div id="boxy-etiqueta" className="rounded-large bg-white p-4 text-center text-black">
                   <p className="n">{producto?.nombre}</p>
                   <Barcode value={valor} format="CODE128" height={60} fontSize={14} margin={6} />
                   <p className="p">{usd(producto?.precio_venta_usd ?? 0)}</p>

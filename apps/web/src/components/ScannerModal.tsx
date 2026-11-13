@@ -17,7 +17,7 @@ interface Props {
   onScan: (codigo: string) => void
 }
 
-const READER_ID = 'crotone-scanner'
+const READER_ID = 'boxy-scanner'
 
 export function ScannerModal({ isOpen, onOpenChange, onScan }: Props) {
   const [error, setError] = useState('')

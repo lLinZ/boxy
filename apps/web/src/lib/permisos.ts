@@ -42,3 +42,12 @@ export function inicioPara(user: User): string {
   if (puede(user, 'productos.gestionar')) return '/inventario'
   return '/clientes'
 }
+
+/** Nombre visible de cada rol. */
+export const ROL_LABEL: Record<string, string> = {
+  admin: 'Administrador',
+  gerente: 'Gerente',
+  cajero: 'Cajero',
+  inventario: 'Inventario',
+  super_admin: 'Dueño del sistema',
+}

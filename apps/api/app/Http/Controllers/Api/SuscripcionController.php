@@ -30,6 +30,9 @@ class SuscripcionController extends Controller
             'dias_restantes' => $sus->diasRestantes(),
             'puede_operar' => $sus->puedeOperar(),
             'fecha_limite' => $sus->fechaLimite(),
+            // Medios de pago de la licencia (config/boxy.php → cobro) y contacto comercial
+            'cobro' => (object) config('boxy.cobro', []),
+            'ventas' => (object) config('boxy.ventas', []),
         ]);
     }
 

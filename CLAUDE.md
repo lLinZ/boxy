@@ -3,10 +3,8 @@
 **Boxy** es un punto de venta con inventario, caja y CRM para negocios en Venezuela
 (abastos, minimarkets), multi-empresa / multi-sucursal. Funciona en dos modos:
 **SaaS** (empresas con licencia mensual) o **dedicado** (una sola tienda dueña del
-sistema). **"Crotone"** es la empresa demo (un minimarket); ya NO es el nombre del producto.
-
-> El repo, la BD y claves internas (`crotone_token`, etc.) conservan el nombre
-> "crotone" — solo la **marca visible** es Boxy. No renombrar lo interno.
+sistema). La empresa de prueba es **"Boxy Demo Market"** (`CuentaPruebaSeeder`).
+El nombre viejo "Crotone" se eliminó del código (claves internas ahora `boxy_*`).
 
 > Idioma: el código se comenta en **español**. Responde al usuario en español.
 
@@ -26,7 +24,7 @@ sistema). **"Crotone"** es la empresa demo (un minimarket); ya NO es el nombre d
 ## Estructura (monorepo)
 
 ```
-crotone/
+boxy/
 ├── apps/
 │   ├── api/   → Laravel (Controllers/Api, Services, Support/Permisos, tests/)
 │   └── web/   → React (src/pages, src/components, src/lib)
@@ -59,7 +57,7 @@ Páginas nuevas: CajaPage, ClienteFichaPage, ComprasPage, PromocionesPage, Empre
 
 ## Cómo levantar
 
-**Requisitos:** XAMPP (PHP 8.2+, MySQL), Node 20+. Base `crotone` (demo) y `crotone_test` (pruebas).
+**Requisitos:** XAMPP (PHP 8.2+, MySQL), Node 20+. Base `boxy` (o SQLite en desarrollo) y `boxy_test` (pruebas).
 
 ```bash
 # 1. MySQL: arrancar desde panel XAMPP
@@ -75,8 +73,11 @@ npm run dev                        # http://localhost:5173
 Vite proxea `/api` → `127.0.0.1:8000` (sin CORS). Preview con tooling: servers `api` y
 `web` (o `web-5174` si el 5173 está ocupado). Instalación real: `docs/DESPLIEGUE.md`.
 
-**Usuarios demo** (clave `password`, solo desarrollo): `admin@crotone.com` (admin, PIN 1234) ·
-`gerente@crotone.com` (gerente, PIN 4321) · `caja@crotone.com` (cajera) · `super@crotone.com` (super-admin).
+**Cuenta de prueba comercial:** admin de "Boxy Demo Market" con correo `BOXY_DEMO_EMAIL`
+(por defecto `aristides@boxy.com`) y clave `BOXY_DEMO_PASSWORD` del `.env` — **la clave nunca
+va en el código** (el repo es público). En un servidor: `php artisan db:seed --class=CuentaPruebaSeeder`.
+**Usuarios extra de desarrollo** (clave `password`): `gerente@boxy.com` (PIN 4321) · `caja@boxy.com` ·
+`super@boxy.com` (super-admin).
 
 ## Comandos
 
@@ -86,7 +87,7 @@ Vite proxea `/api` → `127.0.0.1:8000` (sin CORS). Preview con tooling: servers
 | Build web | `npm run build` (apps/web) — `tsc -b` + vite build |
 | Lint web | `npm run lint` (apps/web) — la regla `set-state-in-effect` ya fallaba en el código viejo |
 | Cálculo web = servidor | `npm run test:calculo` (apps/web) |
-| Tests API | `php artisan test` (apps/api) — MySQL `crotone_test` |
+| Tests API | `php artisan test` (apps/api) — MySQL `boxy_test` |
 | Instalar tienda | `php artisan boxy:instalar` (apps/api) |
 | Respaldo / restaurar | `php artisan boxy:respaldar` · `php artisan boxy:restaurar` |
 

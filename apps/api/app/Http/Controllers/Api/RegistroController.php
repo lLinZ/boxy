@@ -35,6 +35,7 @@ class RegistroController extends Controller
         return response()->json([
             'modo' => config('boxy.modo'),
             'registro_publico' => (bool) config('boxy.registro_publico'),
+            'ventas' => (object) config('boxy.ventas', []),
         ]);
     }
 

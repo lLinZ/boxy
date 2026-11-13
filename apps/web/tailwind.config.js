@@ -1,6 +1,6 @@
 import { heroui } from '@heroui/react'
 
-// Acentos de Crotone = los colores personalizados de kobra (color base por acento).
+// Acentos de Boxy = los colores personalizados de kobra (color base por acento).
 // HeroUI v2 necesita la escala 50–900 completa, así que la generamos a partir del
 // color base mezclándolo con blanco (tonos claros) y negro (tonos oscuros).
 const ACCENTS = {

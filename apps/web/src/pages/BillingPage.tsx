@@ -38,6 +38,13 @@ const ESTADO_LABEL: Record<string, string> = {
   vencida: 'Vencida',
   cancelada: 'Cancelada',
 }
+const COBRO_LABEL: Record<string, string> = {
+  pago_movil: 'Pago Móvil',
+  transferencia: 'Transferencia',
+  usdt: 'USDT',
+  binance: 'Binance Pay',
+  zelle: 'Zelle',
+}
 const METODOS = [
   { key: 'pago_movil', label: 'Pago Móvil' },
   { key: 'transferencia', label: 'Transferencia' },
@@ -117,6 +124,7 @@ export function BillingPage() {
   }
 
   const estado = info?.estado ?? 'sin_suscripcion'
+  const mediosCobro = Object.entries(info?.cobro ?? {}).filter(([, v]) => !!v) as [string, string][]
   const plan = info?.suscripcion.plan
 
   return (
@@ -148,18 +156,44 @@ export function BillingPage() {
         </CardBody>
       </Card>
 
-      {/* Instrucciones de pago */}
+      {/* Instrucciones de pago (vienen de la configuración del servidor) */}
       <Card className={panel}>
         <CardHeader>
           <h3 className="font-display text-lg font-bold">¿Cómo pagar?</h3>
         </CardHeader>
-        <CardBody className="gap-2 text-small text-default-600">
-          <p>Realiza el pago de tu mensualidad por cualquiera de estos medios y luego repórtalo aquí. El equipo de Boxy lo confirma y tu licencia se extiende.</p>
-          <ul className="ml-4 list-disc text-default-500">
-            <li><b>Pago Móvil / Transferencia:</b> Banco 0102 · J-40123456-7 · 0414-1234567</li>
-            <li><b>USDT (TRC-20):</b> TBoxyWalletEjemplo000000000000000000</li>
-            <li><b>Zelle:</b> pagos@boxy.app</li>
-          </ul>
+        <CardBody className="gap-3 text-small text-default-600">
+          {mediosCobro.length > 0 ? (
+            <>
+              <p>Paga la mensualidad por cualquiera de estos medios y luego repórtala aquí. Al confirmarla, tu licencia se extiende.</p>
+              <dl className="grid gap-2 sm:grid-cols-2">
+                {mediosCobro.map(([clave, valor]) => (
+                  <div key={clave} className="rounded-medium bg-default-100 px-3 py-2">
+                    <dt className="text-tiny font-semibold uppercase tracking-wide text-default-500">{COBRO_LABEL[clave] ?? clave}</dt>
+                    <dd className="mt-0.5 select-all break-words font-medium text-foreground">{valor}</dd>
+                  </div>
+                ))}
+              </dl>
+            </>
+          ) : (
+            <p>Escríbenos para recibir los datos de pago de tu plan.</p>
+          )}
+          {(info?.ventas?.whatsapp || info?.ventas?.email) && (
+            <p className="text-default-500">
+              ¿Dudas con tu pago?{' '}
+              {info.ventas.whatsapp && (
+                <a className="font-semibold text-primary underline-offset-4 hover:underline" href={`https://wa.me/${info.ventas.whatsapp}`} target="_blank" rel="noopener noreferrer">
+                  Escríbenos por WhatsApp
+                </a>
+              )}
+              {info.ventas.whatsapp && info.ventas.email && ' o a '}
+              {info.ventas.email && (
+                <a className="font-semibold text-primary underline-offset-4 hover:underline" href={`mailto:${info.ventas.email}`}>
+                  {info.ventas.email}
+                </a>
+              )}
+              .
+            </p>
+          )}
         </CardBody>
       </Card>
 

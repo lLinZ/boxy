@@ -26,6 +26,7 @@ import { ComprasPage } from './pages/ComprasPage'
 import { PromocionesPage } from './pages/PromocionesPage'
 import { EmpresaPage } from './pages/EmpresaPage'
 import { RespaldosPage } from './pages/RespaldosPage'
+import { PerfilPage } from './pages/PerfilPage'
 
 /** Muestra la página solo si el usuario tiene alguno de los permisos (el servidor igual los exige). */
 function Con({ permisos, children }: { permisos: Permiso[]; children: ReactNode }) {
@@ -83,6 +84,7 @@ export default function App() {
                 <Route path="/respaldos" element={<Con permisos={['respaldos.gestionar']}><RespaldosPage /></Con>} />
                 <Route path="/billing" element={<BillingPage />} />
                 <Route path="/admin" element={<SuperAdminPage />} />
+                <Route path="/perfil" element={<PerfilPage />} />
                 <Route path="*" element={<Inicio />} />
               </Routes>
             </Layout>

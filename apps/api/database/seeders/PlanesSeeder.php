@@ -12,8 +12,8 @@ class PlanesSeeder extends Seeder
     {
         $planes = [
             ['basico', 'Básico', 'Para bodegas y abastos pequeños', 15, 1, 2, 500, ['monitor' => false, 'analisis' => false, 'escaner_remoto' => true], 1],
-            ['minimarket', 'Minimarket', 'Para minimarkets con varias cajas', 29, 1, 5, 0, ['monitor' => true, 'analisis' => true, 'escaner_remoto' => true], 2],
-            ['franquicia', 'Franquicia', 'Para cadenas y varias sucursales', 59, 0, 0, 0, ['monitor' => true, 'analisis' => true, 'escaner_remoto' => true], 3],
+            ['minimarket', 'Minimarket', 'Para minimarkets con varias cajas', 25, 1, 5, 0, ['monitor' => true, 'analisis' => true, 'escaner_remoto' => true], 2],
+            ['franquicia', 'Franquicia', 'Para cadenas y varias sucursales', 50, 0, 0, 0, ['monitor' => true, 'analisis' => true, 'escaner_remoto' => true], 3],
         ];
 
         foreach ($planes as [$codigo, $nombre, $descripcion, $precio, $sucursales, $usuarios, $productos, $features, $orden]) {

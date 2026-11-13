@@ -1,4 +1,4 @@
-// Tipos del dominio Crotone (espejo de la API Laravel).
+// Tipos del dominio Boxy (espejo de la API Laravel).
 // Nota: Laravel serializa los decimales como string.
 
 export type TipoIva = 'general' | 'reducido' | 'exento'
@@ -590,6 +590,15 @@ export interface SuscripcionInfo {
   dias_restantes: number
   puede_operar: boolean
   fecha_limite: string | null
+  /** Medios de pago de la licencia configurados en el servidor (vacío = no configurado). */
+  cobro?: Partial<Record<'pago_movil' | 'transferencia' | 'usdt' | 'binance' | 'zelle', string>>
+  ventas?: ContactoVentas
+}
+
+/** Contacto comercial (config del servidor). */
+export interface ContactoVentas {
+  whatsapp?: string
+  email?: string
 }
 
 export interface PagoLicencia {
