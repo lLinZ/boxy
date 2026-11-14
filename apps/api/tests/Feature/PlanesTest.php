@@ -243,4 +243,12 @@ class PlanesTest extends TestCase
         $this->assertSame('usdt', $venta['pagos'][0]['metodo']);
         $this->assertSame('USD', $venta['pagos'][0]['moneda']);
     }
+
+    public function test_la_licencia_se_puede_reportar_pagada_por_binance(): void
+    {
+        $this->enPlan('basico');
+        $this->como($this->admin)->postJson('/api/suscripcion/pago', [
+            'metodo' => 'binance', 'moneda' => 'USD', 'monto' => 29, 'monto_usd' => 29, 'referencia' => '123456789',
+        ])->assertCreated()->assertJsonPath('metodo', 'binance');
+    }
 }
