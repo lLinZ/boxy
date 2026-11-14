@@ -2,17 +2,59 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/favicon-64.png" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#16a34a" />
-    <meta name="description" content="Boxy — Punto de venta, inventario, caja y clientes para tu negocio." />
+    <title>Boxy — Punto de venta e inventario en dólares y bolívares</title>
+    <meta name="description" content="Cobra en divisas y bolívares sin enredos al cuadrar. Punto de venta, inventario y control de IVA, IGTF y tasa BCV para tu negocio en Venezuela. Funciona sin internet." />
+    <link rel="canonical" href="https://boxy.venz.cloud/" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Íconos: la cajita que guiña el ojo -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#161918" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Boxy" />
-    <title>Boxy — Punto de venta e inventario</title>
+
+    <!-- Vista previa al compartir (WhatsApp, Facebook, Telegram, X) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Boxy" />
+    <meta property="og:locale" content="es_VE" />
+    <meta property="og:url" content="https://boxy.venz.cloud/" />
+    <meta property="og:title" content="Boxy — Cobra en divisas y bolívares sin enredos al cuadrar" />
+    <meta property="og:description" content="Punto de venta, inventario y control de IVA, IGTF y tasa BCV en una sola plataforma. Funciona sin internet." />
+    <meta property="og:image" content="https://boxy.venz.cloud/og.jpg" />
+    <meta property="og:image:secure_url" content="https://boxy.venz.cloud/og.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Boxy: cobra en divisas y bolívares sin enredos al cuadrar" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Boxy — Cobra en divisas y bolívares sin enredos al cuadrar" />
+    <meta name="twitter:description" content="Punto de venta, inventario y control de IVA, IGTF y tasa BCV. Funciona sin internet." />
+    <meta name="twitter:image" content="https://boxy.venz.cloud/og.jpg" />
+
+    <!-- Datos estructurados para Google -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Boxy",
+        "url": "https://boxy.venz.cloud/",
+        "image": "https://boxy.venz.cloud/og.jpg",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web, Android, iOS, Windows",
+        "inLanguage": "es",
+        "description": "Punto de venta, inventario y control de IVA, IGTF y tasa BCV para negocios en Venezuela. Cobra en dólares y bolívares y funciona sin internet."
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <h1>Boxy — Cobra en divisas y bolívares sin enredos al cuadrar</h1>
+      <p>Punto de venta, inventario y control de impuestos (IVA, IGTF, BCV) para tu negocio en Venezuela. Activa JavaScript para usar Boxy.</p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

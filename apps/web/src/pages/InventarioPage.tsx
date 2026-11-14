@@ -69,8 +69,14 @@ const MOV_LABEL: Record<string, { label: string; color: 'success' | 'danger' | '
 
 export function InventarioPage() {
   const { panel } = useTheme()
-  const { puede } = useAuth()
+  const { puede, user, empresa, refrescar } = useAuth()
   const gestiona = puede('productos.gestionar')
+  // Dueño y gerente pueden mirar el inventario de cualquier sucursal (los movimientos van a la suya).
+  const sucursales = empresa?.empresa.sucursales ?? []
+  const veOtras = sucursales.length > 1 && (gestiona || puede('reportes.ver'))
+  const [sucursalVista, setSucursalVista] = useState<number | null>(user?.sucursal_id ?? null)
+  const esMiSucursal = !sucursalVista || sucursalVista === user?.sucursal_id
+  const limiteProductos = empresa?.plan?.limites.productos
   const mueve = puede('inventario.movimientos')
   const veCostos = gestiona || puede('reportes.ver')
   const veKardex = mueve || veCostos
@@ -122,15 +128,22 @@ export function InventarioPage() {
     labelModal.onOpen()
   }
 
+  // El indicador de carga se enciende al cambiar de sucursal (no dentro del efecto).
   function cargar() {
-    setCargando(true)
     api
-      .get<Inventario[]>('/inventario')
+      .get<Inventario[]>('/inventario', { params: esMiSucursal ? {} : { sucursal_id: sucursalVista } })
       .then((r) => setItems(r.data))
       .finally(() => setCargando(false))
   }
 
-  useEffect(cargar, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(cargar, [sucursalVista])
+
+  /** Tras crear o importar productos: recarga la lista y el uso del plan. */
+  function recargarTodo() {
+    cargar()
+    void refrescar().catch(() => {})
+  }
 
   const filtrados = useMemo(() => {
     const q = filtro.toLowerCase()
@@ -179,7 +192,7 @@ export function InventarioPage() {
     setKardexCargando(true)
     kardexModal.onOpen()
     api
-      .get<Paginated<Movimiento>>(`/inventario/kardex/${inv.producto_id}`)
+      .get<Paginated<Movimiento>>(`/inventario/kardex/${inv.producto_id}`, { params: esMiSucursal ? {} : { sucursal_id: sucursalVista } })
       .then((r) => setKardex(r.data.data))
       .finally(() => setKardexCargando(false))
   }
@@ -208,7 +221,7 @@ export function InventarioPage() {
     <div className="flex flex-col gap-4 sm:gap-6">
       {/* Métricas del inventario */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        <MiniStat panel={panel} icon={<Package className="h-5 w-5" />} tone="bg-primary/15 text-primary" label="Productos" value={String(items.length)} />
+        <MiniStat panel={panel} icon={<Package className="h-5 w-5" />} tone="bg-primary/15 text-primary" label="Productos" value={limiteProductos?.maximo ? `${limiteProductos.uso} / ${limiteProductos.maximo}` : String(items.length)} />
         <MiniStat panel={panel} icon={<Wallet className="h-5 w-5" />} tone="bg-secondary/15 text-secondary" label="Valor a costo" value={veCostos ? usd(stats.costo) : '—'} />
         <MiniStat panel={panel} icon={<TrendingUp className="h-5 w-5" />} tone="bg-success/15 text-success" label="Valor a venta" value={usd(stats.venta)} />
         <MiniStat panel={panel} icon={<Boxes className="h-5 w-5" />} tone={stats.bajo > 0 ? 'bg-danger/15 text-danger' : 'bg-default/30 text-default-600'} label="Bajo stock" value={String(stats.bajo)} />
@@ -219,7 +232,30 @@ export function InventarioPage() {
       <Card className={panel}>
         <CardHeader className="flex-col items-stretch gap-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-display text-xl font-bold">Inventario</h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="font-display text-xl font-bold">Inventario</h2>
+              {veOtras && (
+                <Select
+                  aria-label="Sucursal"
+                  size="sm"
+                  variant="bordered"
+                  className="w-56"
+                  selectedKeys={sucursalVista ? [String(sucursalVista)] : []}
+                  onSelectionChange={(k) => {
+                    const v = Array.from(k)[0]
+                    if (v && Number(v) !== sucursalVista) {
+                      setCargando(true)
+                      setSucursalVista(Number(v))
+                    }
+                  }}
+                >
+                  {sucursales.map((s) => (
+                    <SelectItem key={String(s.id)}>{s.id === user?.sucursal_id ? `${s.nombre} (la tuya)` : s.nombre}</SelectItem>
+                  ))}
+                </Select>
+              )}
+              {!esMiSucursal && <Chip size="sm" variant="flat" color="warning">Solo consulta</Chip>}
+            </div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <Switch size="sm" isSelected={soloBajo} onValueChange={setSoloBajo}>
                 <span className="text-small">Solo bajo stock</span>
@@ -398,7 +434,7 @@ export function InventarioPage() {
                             <History className="h-4 w-4" />
                           </Button>
                           )}
-                          {mueve && (
+                          {mueve && esMiSucursal && (
                           <Button
                             size="sm"
                             variant="flat"
@@ -513,8 +549,10 @@ export function InventarioPage() {
                           <span className="text-tiny text-default-400">
                             {n(m.cantidad_anterior).toLocaleString('es-VE')} → {n(m.cantidad_nueva).toLocaleString('es-VE')}
                           </span>
-                          <span className="ml-auto text-tiny text-default-400">
+                          <span className="ml-auto text-right text-tiny text-default-400">
                             {new Date(m.created_at).toLocaleString('es-VE', { dateStyle: 'short', timeStyle: 'short' })}
+                            <span className="block">{m.user?.name ?? 'Automático'}</span>
+                            {m.observacion && <span className="block max-w-[14rem] truncate">{m.observacion}</span>}
                           </span>
                         </div>
                       )
@@ -536,7 +574,7 @@ export function InventarioPage() {
       <ImportarProductosModal
         isOpen={importModal.isOpen}
         onOpenChange={importModal.onOpenChange}
-        onImported={cargar}
+        onImported={recargarTodo}
       />
 
       {/* Modal alta / edición de producto */}
@@ -544,7 +582,7 @@ export function InventarioPage() {
         isOpen={formModal.isOpen}
         onOpenChange={formModal.onOpenChange}
         inv={editando}
-        onSaved={cargar}
+        onSaved={recargarTodo}
       />
 
       <PreciosMasivosModal isOpen={preciosModal.isOpen} onOpenChange={preciosModal.onOpenChange} onAplicado={cargar} />

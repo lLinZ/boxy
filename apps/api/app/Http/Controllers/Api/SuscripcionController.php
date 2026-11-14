@@ -64,7 +64,7 @@ class SuscripcionController extends Controller
     {
         $datos = $request->validate([
             'plan_id' => ['nullable', 'exists:planes,id'],
-            'metodo' => ['required', 'in:pago_movil,transferencia,usdt,zelle,efectivo,otro'],
+            'metodo' => ['required', 'in:pago_movil,transferencia,usdt,binance,zelle,efectivo,otro'],
             'moneda' => ['required', 'in:USD,VES'],
             'monto' => ['required', 'numeric', 'gt:0', 'max:100000000'],
             'monto_usd' => ['required', 'numeric', 'gt:0', 'max:1000000'],

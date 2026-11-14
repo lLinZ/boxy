@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Empresa;
 use App\Models\Sucursal;
+use App\Support\LimitesPlan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -49,6 +50,8 @@ class EmpresaController extends Controller
             'empresa' => $empresa->makeHidden('config'),
             'ajustes' => $empresa->ajustes(),
             'modo' => config('boxy.modo'),
+            // Límites, uso y funciones del plan (null en modo dedicado)
+            'plan' => LimitesPlan::resumen($empresa->id),
         ]);
     }
 

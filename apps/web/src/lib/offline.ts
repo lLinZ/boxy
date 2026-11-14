@@ -123,8 +123,38 @@ export interface VentaPendiente {
   creada_el: string
   payload: Record<string, unknown>
   total_usd: number
+  /** Quién la hizo: solo se envía con la sesión de esa misma persona. */
+  user_id?: number
   /** Si el servidor la rechazó por una regla (no por falta de red), queda para revisión. */
   error?: string
+}
+
+/** Usuario con sesión en este equipo (lo guarda AuthContext). */
+function usuarioActual(): number | null {
+  try {
+    return (JSON.parse(localStorage.getItem('boxy_usuario') ?? 'null') as { id?: number } | null)?.id ?? null
+  } catch {
+    return null
+  }
+}
+
+/** Ventas guardadas en el equipo que aún no llegan al servidor, de este usuario o de otro. */
+export async function pendientesDeOtros(userId: number | null): Promise<number> {
+  return (await pendientes()).filter((v) => !v.error && v.user_id != null && v.user_id !== userId).length
+}
+
+/** Nombre de la caché donde el service worker guarda las últimas respuestas de la API. */
+export const CACHE_API = 'boxy-api'
+
+/**
+ * Borra los datos de la empresa guardados en el equipo (catálogo y respuestas de
+ * la API) al cerrar o iniciar sesión, para que otra cuenta no vea datos ajenos.
+ * La cola de ventas NO se borra: cada venta se envía cuando su cajero vuelve a entrar.
+ */
+export async function limpiarDatosLocales(): Promise<void> {
+  catalogoMemoria = null
+  await escribir('catalogo', null).catch(() => {})
+  if ('caches' in window) await caches.delete(CACHE_API).catch(() => {})
 }
 
 type Oyente = (pendientes: VentaPendiente[]) => void
@@ -165,8 +195,11 @@ export async function sincronizarCola(): Promise<{ enviadas: number; rechazadas:
   let rechazadas = 0
   try {
     const cola = await pendientes()
+    const yo = usuarioActual()
     for (const v of cola) {
       if (v.error) continue
+      // La venta va con el token de quien la hizo (otro cajero/empresa no la puede enviar).
+      if (v.user_id != null && v.user_id !== yo) continue
       try {
         await api.post('/ventas', { ...v.payload, uuid: v.uuid, origen: 'offline' })
         await guardarCola((await pendientes()).filter((x) => x.uuid !== v.uuid))
@@ -189,10 +222,12 @@ export async function sincronizarCola(): Promise<{ enviadas: number; rechazadas:
 export function iniciarSincronizacion(): () => void {
   const intentar = () => void sincronizarCola()
   window.addEventListener('online', intentar)
+  window.addEventListener('boxy:en-linea', intentar) // el servidor volvió a responder (ver lib/conexion.ts)
   const timer = setInterval(intentar, 60000)
   intentar()
   return () => {
     window.removeEventListener('online', intentar)
+    window.removeEventListener('boxy:en-linea', intentar)
     clearInterval(timer)
   }
 }

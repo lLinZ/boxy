@@ -28,6 +28,12 @@ class InventarioMovimiento extends Model
         return $this->belongsTo(Producto::class);
     }
 
+    /** Quién hizo el movimiento (null si fue automático). */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function referencia(): MorphTo
     {
         return $this->morphTo();

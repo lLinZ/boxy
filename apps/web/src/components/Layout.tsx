@@ -31,11 +31,12 @@ import {
   Receipt,
   ShieldCheck,
   ShoppingCart,
-  Store,
   Truck,
   UserRound,
   Users,
   Wallet,
+  type LucideIcon,
+  Lock,
 } from 'lucide-react'
 import { ROL_LABEL } from '../lib/permisos'
 import { useAuth } from '../auth/AuthContext'
@@ -43,22 +44,26 @@ import { useTheme } from '../theme/ThemeContext'
 import { api } from '../lib/api'
 import { bs } from '../lib/format'
 import { alCambiarCola, iniciarSincronizacion, type VentaPendiente } from '../lib/offline'
+import { useConexion } from '../lib/conexion'
 import type { Permiso } from '../lib/permisos'
 import { ThemeControls } from './ThemeControls'
+import { BotonInstalar } from './BotonInstalar'
 import { CuentaModal } from './CuentaModal'
-import type { TasaCambio } from '../types'
+import type { FuncionPlan, TasaCambio } from '../types'
+import { BoxyLogo } from './BoxyLogo'
 
 interface ItemMenu {
   to: string
   label: string
-  icon: typeof Store
+  icon: LucideIcon
   permisos?: Permiso[] // cualquiera de ellos; sin permisos = todos los de la empresa
+  funcion?: FuncionPlan // función que depende del plan contratado
   soloSaas?: boolean
 }
 
 const navItems: ItemMenu[] = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permisos: ['reportes.ver'] },
-  { to: '/monitor', label: 'Monitor en vivo', icon: Activity, permisos: ['reportes.ver'] },
+  { to: '/monitor', label: 'Monitor en vivo', icon: Activity, permisos: ['reportes.ver'], funcion: 'monitor' },
   { to: '/pos', label: 'Caja (POS)', icon: ShoppingCart, permisos: ['ventas.crear'] },
   { to: '/caja', label: 'Turnos de caja', icon: Wallet, permisos: ['caja.operar'] },
   { to: '/ventas', label: 'Ventas', icon: Receipt, permisos: ['ventas.crear', 'ventas.ver_todas'] },
@@ -66,7 +71,7 @@ const navItems: ItemMenu[] = [
   { to: '/inventario', label: 'Inventario', icon: Package },
   { to: '/compras', label: 'Compras', icon: Truck, permisos: ['compras.gestionar'] },
   { to: '/promociones', label: 'Promociones', icon: Percent, permisos: ['promociones.gestionar'] },
-  { to: '/analisis', label: 'Análisis', icon: LineChart, permisos: ['reportes.ver'] },
+  { to: '/analisis', label: 'Análisis', icon: LineChart, permisos: ['reportes.ver'], funcion: 'analisis' },
   { to: '/tasas', label: 'Tasas', icon: CircleDollarSign, permisos: ['tasas.sincronizar', 'tasas.editar'] },
   { to: '/usuarios', label: 'Usuarios', icon: Users, permisos: ['usuarios.gestionar'] },
   { to: '/empresa', label: 'Mi empresa', icon: Building2, permisos: ['empresa.configurar'] },
@@ -102,13 +107,13 @@ const titulos: Record<string, string> = {
 }
 
 export function Layout({ children }: { children: ReactNode }) {
-  const { user, logout, puede, empresa } = useAuth()
+  const { user, logout, puede, empresa, tieneFuncion } = useAuth()
   const { glass } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
   const [tasa, setTasa] = useState<TasaCambio | null>(null)
   const [modo, setModo] = useState<string>('saas')
-  const [enLinea, setEnLinea] = useState(navigator.onLine)
+  const enLinea = useConexion()
   const [cola, setCola] = useState<VentaPendiente[]>([])
   const menuMovil = useDisclosure()
 
@@ -119,21 +124,22 @@ export function Layout({ children }: { children: ReactNode }) {
 
   // Conexión y cola de ventas sin conexión (se envían solas al volver la red)
   useEffect(() => {
-    const on = () => setEnLinea(true)
-    const off = () => setEnLinea(false)
-    window.addEventListener('online', on)
-    window.addEventListener('offline', off)
     const parar = user?.empresa_id ? iniciarSincronizacion() : () => {}
     const quitar = alCambiarCola(setCola)
     return () => {
-      window.removeEventListener('online', on)
-      window.removeEventListener('offline', off)
       parar()
       quitar()
     }
   }, [user?.empresa_id])
 
   async function handleLogout() {
+    if (
+      pendientes > 0 &&
+      !window.confirm(
+        `Tienes ${pendientes} venta(s) guardadas en este equipo que aún no se envían. Se enviarán cuando vuelvas a entrar con tu usuario en este mismo equipo. ¿Cerrar sesión igual?`,
+      )
+    )
+      return
     await logout()
     navigate('/login')
   }
@@ -146,9 +152,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const nav = (
     <>
       <div className="mb-6 flex items-center gap-3 px-1">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30">
-          <Store className="h-6 w-6" strokeWidth={2.25} />
-        </div>
+        <BoxyLogo className="h-11 w-11 shrink-0" />
         <div className="min-w-0">
           <h1 className="font-display text-xl font-bold leading-none tracking-tight">Boxy</h1>
           <p className="truncate text-tiny text-default-500">{user?.empresa?.nombre ?? user?.sucursal?.nombre ?? (user?.rol === 'super_admin' ? 'Administración' : '')}</p>
@@ -172,6 +176,9 @@ export function Layout({ children }: { children: ReactNode }) {
           >
             <Icon className="h-[18px] w-[18px]" />
             {item.label}
+            {item.funcion && !tieneFuncion(item.funcion) && (
+              <Lock className="ml-auto h-3.5 w-3.5 opacity-60" aria-label="Incluido en un plan superior" />
+            )}
           </NavLink>
         )
       })}
@@ -208,8 +215,10 @@ export function Layout({ children }: { children: ReactNode }) {
     </>
   )
 
-  const pendientes = cola.filter((v) => !v.error).length
-  const rechazadas = cola.filter((v) => v.error).length
+  // Solo las ventas de este usuario: las de otro cajero se envían con su sesión.
+  const mias = cola.filter((v) => v.user_id == null || v.user_id === user?.id)
+  const pendientes = mias.filter((v) => !v.error).length
+  const rechazadas = mias.filter((v) => v.error).length
 
   return (
     <div className="relative isolate flex h-[100dvh] overflow-hidden bg-background">
@@ -270,6 +279,8 @@ export function Layout({ children }: { children: ReactNode }) {
                 </Chip>
               </Tooltip>
             )}
+            <BotonInstalar className="hidden sm:flex" />
+            <BotonInstalar className="sm:hidden" compacto />
             {tasa && (
               <Chip color="success" variant="flat" className="hidden font-semibold sm:flex">
                 BCV {bs(tasa.tasa)}

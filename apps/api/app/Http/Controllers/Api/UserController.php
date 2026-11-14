@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Suscripcion;
 use App\Models\User;
 use App\Support\Auditoria;
+use App\Support\LimitesPlan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -78,6 +79,11 @@ class UserController extends Controller
             throw new ReglaNegocioException('No puedes quitarte el rol de administrador ni desactivarte a ti mismo.');
         }
 
+        // Reactivar a alguien vuelve a ocupar un cupo del plan.
+        if (($datos['activo'] ?? false) === true && ! $usuario->activo) {
+            $this->verificarLimitePlan($yo->empresa_id);
+        }
+
         $cambios = collect($datos)->only(['name', 'email', 'rol', 'sucursal_id', 'activo'])->all();
         $cierraSesiones = false;
 
@@ -138,13 +144,6 @@ class UserController extends Controller
     /** En el SaaS, el plan limita cuántos usuarios activos puede tener la empresa (0 = sin límite). */
     private function verificarLimitePlan(int $empresaId): void
     {
-        if (config('boxy.modo') !== 'saas') {
-            return;
-        }
-        $maximo = (int) (Suscripcion::where('empresa_id', $empresaId)->value('max_usuarios') ?? 0);
-        $activos = User::where('empresa_id', $empresaId)->where('activo', true)->count();
-        if ($maximo > 0 && $activos >= $maximo) {
-            throw new ReglaNegocioException("Tu plan permite {$maximo} usuarios activos. Mejora el plan para agregar más.");
-        }
+        LimitesPlan::exigirCupo($empresaId, 'usuarios');
     }
 }

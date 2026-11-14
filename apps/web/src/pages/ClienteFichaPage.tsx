@@ -34,6 +34,7 @@ const METODOS_ABONO = [
   { key: 'tarjeta', label: 'Tarjeta', moneda: 'VES' },
   { key: 'efectivo_usd', label: 'Efectivo USD', moneda: 'USD' },
   { key: 'zelle', label: 'Zelle', moneda: 'USD' },
+  { key: 'usdt', label: 'USDT', moneda: 'USD' },
 ]
 
 /** Ficha del cliente: historial de compras, favoritos, estado de cuenta (fiado) y WhatsApp. */

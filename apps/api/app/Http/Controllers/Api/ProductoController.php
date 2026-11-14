@@ -10,6 +10,7 @@ use App\Models\Inventario;
 use App\Models\PrecioHistorial;
 use App\Models\Producto;
 use App\Services\StockService;
+use App\Support\LimitesPlan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -72,9 +73,15 @@ class ProductoController extends Controller
         $errores = [];
 
         DB::transaction(function () use ($request, $user, $empresaId, $sucursalId, &$creados, &$actualizados, &$errores) {
+            // Cupo del plan para productos nuevos (null = sin límite). Se bloquea la
+            // empresa para que dos importaciones a la vez no se salten el límite.
+            DB::table('empresas')->where('id', $empresaId)->lockForUpdate()->first();
+            $cupo = LimitesPlan::disponibles($empresaId, 'productos');
+            $maximo = LimitesPlan::maximo($empresaId, 'productos');
+
             foreach ($request->input('productos') as $i => $fila) {
                 $validador = Validator::make(is_array($fila) ? $fila : [], [
-                    'sku' => ['required', 'string', 'max:50'],
+                    'sku' => ['nullable', 'string', 'max:50'],
                     'nombre' => ['required', 'string', 'max:255'],
                     'precio_venta_usd' => ['required', 'numeric', 'min:0', 'max:1000000'],
                     'precio_costo_usd' => ['nullable', 'numeric', 'min:0', 'max:1000000'],
@@ -119,7 +126,18 @@ class ProductoController extends Controller
                     $atributos['codigo_barra'] = $datos['codigo_barra'];
                 }
 
-                $producto = Producto::firstOrNew(['empresa_id' => $empresaId, 'sku' => $datos['sku']]);
+                $producto = $this->productoDeLaFila($empresaId, $datos);
+                if (! $producto->exists || ! $producto->activo) {
+                    if ($cupo !== null && $cupo <= 0) {
+                        $errores[] = ['fila' => $i + 1, 'error' => "No se agregó: tu plan permite hasta {$maximo} productos activos."];
+
+                        continue;
+                    }
+                    $atributos['activo'] = true;
+                    if ($cupo !== null) {
+                        $cupo--;
+                    }
+                }
                 $precioAnterior = $producto->exists ? (float) $producto->precio_venta_usd : null;
                 $producto->fill($atributos)->save();
                 $this->registrarPrecio($producto, $precioAnterior, $user->id, 'importacion');
@@ -149,6 +167,36 @@ class ProductoController extends Controller
             'actualizados' => $actualizados,
             'errores' => $errores,
         ]);
+    }
+
+    /**
+     * Busca el producto de una fila del Excel: por SKU; si la fila no trae SKU,
+     * por código de barras y luego por nombre. Si es nuevo y no trae SKU, se le
+     * genera uno (así un Excel sin columna de código entra igual).
+     */
+    private function productoDeLaFila(int $empresaId, array &$datos): Producto
+    {
+        $base = Producto::where('empresa_id', $empresaId);
+        if (! empty($datos['sku'])) {
+            return (clone $base)->where('sku', $datos['sku'])->first()
+                ?? new Producto(['empresa_id' => $empresaId, 'sku' => $datos['sku']]);
+        }
+        $existente = (! empty($datos['codigo_barra']) ? (clone $base)->where('codigo_barra', $datos['codigo_barra'])->first() : null)
+            ?? (clone $base)->whereRaw('LOWER(nombre) = ?', [mb_strtolower(trim($datos['nombre']))])->first();
+        if ($existente) {
+            return $existente;
+        }
+
+        $sku = ! empty($datos['codigo_barra']) ? Str::limit($datos['codigo_barra'], 50, '') : null;
+        if (! $sku || (clone $base)->where('sku', $sku)->exists()) {
+            $raiz = Str::upper(Str::limit(Str::slug($datos['nombre'], ''), 20, '')) ?: 'PROD';
+            $n = 1;
+            do {
+                $sku = $raiz.'-'.$n++;
+            } while ((clone $base)->where('sku', $sku)->exists());
+        }
+
+        return new Producto(['empresa_id' => $empresaId, 'sku' => $sku]);
     }
 
     /**
@@ -299,6 +347,9 @@ class ProductoController extends Controller
     {
         $datos = $this->validar($request);
         $datos['empresa_id'] = $request->user()->empresa_id;
+        if ($datos['activo'] ?? true) {
+            LimitesPlan::exigirCupo($datos['empresa_id'], 'productos');
+        }
 
         $producto = Producto::create($datos);
 
@@ -309,6 +360,11 @@ class ProductoController extends Controller
     {
         $this->autorizar($request, $producto);
         $datos = $this->validar($request, $producto->id);
+
+        // Reactivar un producto vuelve a ocupar un cupo del plan.
+        if (($datos['activo'] ?? false) && ! $producto->activo) {
+            LimitesPlan::exigirCupo($producto->empresa_id, 'productos');
+        }
 
         $precioAnterior = (float) $producto->precio_venta_usd;
         if (! $request->user()->puede('precios.gestionar') && round((float) $datos['precio_venta_usd'], 4) !== round($precioAnterior, 4)) {

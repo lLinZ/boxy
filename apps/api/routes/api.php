@@ -36,7 +36,7 @@ Route::post('/registro', [RegistroController::class, 'registrar'])->middleware('
 Route::post('/scanner/canjear', [ScannerController::class, 'canjear'])->middleware('throttle:scanner-canje'); // teléfono
 
 // ───────── Teléfono-escáner: su token solo sirve para encolar lecturas ─────────
-Route::middleware(['auth:sanctum', 'activo', 'ability:'.ScannerController::HABILIDAD, 'licencia'])
+Route::middleware(['auth:sanctum', 'activo', 'ability:'.ScannerController::HABILIDAD, 'licencia', 'plan:escaner_remoto'])
     ->post('scanner/scan', [ScannerController::class, 'scan']);
 
 // ───────── Puente de la impresora fiscal: token de solo "fiscal" ─────────
@@ -109,17 +109,22 @@ Route::middleware(['auth:sanctum', 'activo', 'abilities:*'])->group(function () 
             // Panel principal + monitor
             Route::middleware('permiso:reportes.ver')->group(function () {
                 Route::get('dashboard', [DashboardController::class, 'index']);
-                Route::get('monitor', [MonitorController::class, 'index']);
-                Route::get('monitor/recomendaciones', [MonitorController::class, 'recomendaciones']);
-                Route::get('productos/metricas', [ProductoController::class, 'metricas']);
+                // Funciones según el plan contratado
+                Route::middleware('plan:monitor')->group(function () {
+                    Route::get('monitor', [MonitorController::class, 'index']);
+                    Route::get('monitor/recomendaciones', [MonitorController::class, 'recomendaciones']);
+                });
+                Route::get('productos/metricas', [ProductoController::class, 'metricas'])->middleware('plan:analisis');
             });
 
             // Datos de la empresa y sucursales
             Route::get('empresa', [EmpresaController::class, 'show']);
             Route::get('sucursales', [SucursalController::class, 'index']);
+            Route::get('plan', [SucursalController::class, 'plan']); // límites, uso y funciones del plan
             Route::middleware('permiso:empresa.configurar')->group(function () {
                 Route::put('empresa', [EmpresaController::class, 'update']);
                 Route::post('empresa/logo', [EmpresaController::class, 'subirLogo']);
+                Route::post('sucursales', [SucursalController::class, 'store']);
                 Route::put('sucursales/{sucursal}', [EmpresaController::class, 'actualizarSucursal']);
                 // Impresora fiscal (administración de la cola)
                 Route::post('fiscal/clave', [FiscalController::class, 'generarClave']);
@@ -135,7 +140,7 @@ Route::middleware(['auth:sanctum', 'activo', 'abilities:*'])->group(function () 
 
             // Escáner remoto (la PC de la caja)
             Route::middleware('permiso:ventas.crear')->group(function () {
-                Route::post('scanner/emparejar', [ScannerController::class, 'emparejar']);
+                Route::post('scanner/emparejar', [ScannerController::class, 'emparejar'])->middleware('plan:escaner_remoto');
                 Route::get('scanner/cola', [ScannerController::class, 'cola']);
             });
 

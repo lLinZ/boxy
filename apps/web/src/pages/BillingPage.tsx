@@ -45,14 +45,13 @@ const COBRO_LABEL: Record<string, string> = {
   binance: 'Binance Pay',
   zelle: 'Zelle',
 }
-const METODOS = [
-  { key: 'pago_movil', label: 'Pago Móvil' },
-  { key: 'transferencia', label: 'Transferencia' },
-  { key: 'usdt', label: 'USDT' },
-  { key: 'zelle', label: 'Zelle' },
-  { key: 'efectivo', label: 'Efectivo' },
-  { key: 'otro', label: 'Otro' },
-]
+/** Medios para reportar el pago: los que Boxy tiene configurados para cobrar, más "Otro". */
+function metodosDePago(cobro: Record<string, string | undefined> | undefined) {
+  const configurados = Object.entries(cobro ?? {})
+    .filter(([k, v]) => !!v && COBRO_LABEL[k])
+    .map(([k]) => ({ key: k, label: COBRO_LABEL[k] }))
+  return [...configurados, { key: 'otro', label: 'Otro' }]
+}
 
 export function BillingPage() {
   const { panel } = useTheme()
@@ -83,6 +82,8 @@ export function BillingPage() {
     ])
       .then(([s, p, pl]) => {
         setInfo(s.data)
+        // Arranca con el primer medio configurado (ej. Binance si no hay pago móvil)
+        setMetodo(metodosDePago(s.data.cobro)[0].key)
         setPagos(p.data)
         setPlanes(pl.data)
         setPlanId(String(s.data.suscripcion.plan?.id ?? pl.data[0]?.id ?? ''))
@@ -251,7 +252,7 @@ export function BillingPage() {
                     selectedKeys={[metodo]}
                     onChange={(e) => e.target.value && setMetodo(e.target.value)}
                   >
-                    {METODOS.map((m) => (
+                    {metodosDePago(info?.cobro).map((m) => (
                       <SelectItem key={m.key}>{m.label}</SelectItem>
                     ))}
                   </Select>

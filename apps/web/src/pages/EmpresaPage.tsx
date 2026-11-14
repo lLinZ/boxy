@@ -20,7 +20,7 @@ import { usd } from '../lib/format'
 import { imprimirTicket, ticketVenta } from '../lib/ticket'
 import { useAuth } from '../auth/AuthContext'
 import { useTheme } from '../theme/ThemeContext'
-import type { AjustesEmpresa, EmpresaInfo, SucursalFull } from '../types'
+import type { AjustesEmpresa, EmpresaInfo, PlanEmpresa, SucursalFull } from '../types'
 
 /** Datos de la empresa (encabezado de tickets) y preferencias de operación. */
 export function EmpresaPage() {
@@ -129,7 +129,7 @@ export function EmpresaPage() {
             <Input label="Correo" type="email" variant="bordered" value={datos.email} onValueChange={(v) => setDatos((d) => ({ ...d, email: v }))} />
           </div>
         </div>
-        <Sucursales sucursales={info.empresa.sucursales} />
+        <Sucursales sucursales={info.empresa.sucursales} plan={info.plan} />
       </Seccion>
 
       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
@@ -252,9 +252,16 @@ function Seccion({ titulo, icono, panel, children }: { titulo: string; icono: Re
   )
 }
 
-function Sucursales({ sucursales }: { sucursales: SucursalFull[] }) {
+function Sucursales({ sucursales, plan }: { sucursales: SucursalFull[]; plan?: PlanEmpresa | null }) {
+  const { refrescar } = useAuth()
   const [lista, setLista] = useState(sucursales)
   const [guardada, setGuardada] = useState<number | null>(null)
+  const [nueva, setNueva] = useState('')
+  const [creando, setCreando] = useState(false)
+  const [error, setError] = useState('')
+
+  const maximo = plan?.limites.sucursales.maximo ?? null
+  const lleno = maximo !== null && lista.length >= maximo
 
   async function guardar(s: SucursalFull) {
     await api.put(`/sucursales/${s.id}`, { nombre: s.nombre, direccion: s.direccion, telefono: s.telefono })
@@ -262,9 +269,31 @@ function Sucursales({ sucursales }: { sucursales: SucursalFull[] }) {
     setTimeout(() => setGuardada(null), 1500)
   }
 
+  async function agregar() {
+    if (!nueva.trim()) return
+    setCreando(true)
+    setError('')
+    try {
+      const r = await api.post<SucursalFull>('/sucursales', { nombre: nueva.trim() })
+      setLista((l) => [...l, r.data])
+      setNueva('')
+      await refrescar() // el selector de sucursal y el uso del plan se actualizan
+    } catch (e) {
+      setError(mensajeError(e))
+    } finally {
+      setCreando(false)
+    }
+  }
+
   return (
     <div className="mt-2 flex flex-col gap-2">
-      <p className="text-small font-semibold">Sucursales</p>
+      <p className="text-small font-semibold">
+        Sucursales{' '}
+        <span className="font-normal text-default-400">
+          ({lista.length}
+          {maximo !== null ? ` de ${maximo} en tu plan` : ''})
+        </span>
+      </p>
       {lista.map((s, i) => (
         <div key={s.id} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1.5fr_1fr_auto]">
           <Input size="sm" label={`Nombre (${s.codigo})`} variant="bordered" value={s.nombre} onValueChange={(v) => setLista((l) => l.map((x, j) => (j === i ? { ...x, nombre: v } : x)))} />
@@ -273,6 +302,23 @@ function Sucursales({ sucursales }: { sucursales: SucursalFull[] }) {
           <Button size="sm" variant="flat" className="self-center" onPress={() => guardar(lista[i])}>{guardada === s.id ? '✓' : 'Guardar'}</Button>
         </div>
       ))}
+      {lleno ? (
+        <p className="text-small text-default-500">
+          Tu plan incluye {maximo === 1 ? '1 sucursal' : `${maximo} sucursales`}. Para abrir otra tienda, cambia al plan Franquicia en
+          {' '}“Mi licencia”.
+        </p>
+      ) : (
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Input size="sm" label="Nueva sucursal" placeholder="Ej. Sucursal Centro" variant="bordered" value={nueva} onValueChange={setNueva} className="sm:max-w-xs" />
+          <Button size="sm" color="primary" variant="flat" isLoading={creando} isDisabled={!nueva.trim()} onPress={agregar}>
+            Agregar sucursal
+          </Button>
+        </div>
+      )}
+      {error && <p className="text-small text-danger">{error}</p>}
+      <p className="text-tiny text-default-400">
+        Cada sucursal lleva su propio inventario y caja. Asigna a cada usuario su sucursal en “Usuarios”.
+      </p>
     </div>
   )
 }

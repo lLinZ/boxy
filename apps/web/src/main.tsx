@@ -8,6 +8,10 @@ import './index.css'
 import App from './App.tsx'
 import { AuthProvider } from './auth/AuthContext.tsx'
 import { ThemeProvider } from './theme/ThemeContext.tsx'
+import { escucharInstalacion } from './lib/instalar'
+
+// El aviso de instalación llega una sola vez y temprano: se guarda para el botón "Instalar app".
+escucharInstalacion()
 
 // En desarrollo, elimina cualquier service worker viejo (de una build PWA previa)
 // y su caché, para no quedar nunca con un bundle desactualizado pegado.

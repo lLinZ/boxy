@@ -22,7 +22,7 @@ class CuentaClienteService
     /** Métodos con los que se puede abonar una deuda. */
     public const METODOS_ABONO = [
         'efectivo_bs' => 'VES', 'pago_movil' => 'VES', 'transferencia' => 'VES', 'tarjeta' => 'VES',
-        'efectivo_usd' => 'USD', 'zelle' => 'USD',
+        'efectivo_usd' => 'USD', 'zelle' => 'USD', 'usdt' => 'USD',
     ];
 
     /** Venta a crédito: aumenta la deuda. Llamar dentro de la transacción de la venta. */

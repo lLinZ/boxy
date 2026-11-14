@@ -146,7 +146,7 @@ class MonitorController extends Controller
             ->get();
 
         $totalUsd = (float) $filas->sum('usd');
-        $divisaUsd = (float) $filas->whereIn('metodo', ['efectivo_usd', 'zelle'])->sum('usd');
+        $divisaUsd = (float) $filas->whereIn('metodo', ['efectivo_usd', 'zelle', 'usdt'])->sum('usd');
 
         return [
             'metodos' => $filas->map(fn ($f) => [

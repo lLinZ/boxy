@@ -45,7 +45,8 @@ class StockService
             'cantidad' => $delta,
             'cantidad_anterior' => $anterior,
             'cantidad_nueva' => $nueva,
-            'costo_usd' => $costoUsd ?? $producto->precio_costo_usd,
+            // Un producto recién creado sin costo trae null en memoria (en la base es 0).
+            'costo_usd' => $costoUsd ?? (float) ($producto->precio_costo_usd ?? 0),
             'referencia_type' => $referencia ? $referencia::class : null,
             'referencia_id' => $referencia?->getKey(),
             'observacion' => $observacion,
