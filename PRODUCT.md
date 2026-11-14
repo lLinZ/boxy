@@ -10,7 +10,9 @@ web
 Dueños, gerentes y cajeros de negocios en Venezuela que venden productos y necesitan
 inventario, punto de venta y control del dinero: abastos y minimarkets, ferreterías,
 tiendas de ropa y calzado, tiendas de electrónica y celulares, farmacias y cosméticos,
-y cualquier comercio con mostrador e inventario. El cajero cobra rápido con pagos
+y cualquier comercio con mostrador e inventario. Público principal: negocios desorganizados
+que hoy llevan todo en Excel (tasa escrita a mano, fórmulas rotas, stock que no cuadra).
+Evitar jerga contable ("kardex"): decir "historial de cada movimiento". El cajero cobra rápido con pagos
 mixtos; el dueño quiere saber cuánto entró, cuánto le deben y cuánto gana.
 
 ## Product Purpose
@@ -40,7 +42,7 @@ Zelle, USDT, transferencia, punto de venta y fiado.
 
 ## Brand Commitments
 Nombre "Boxy". Idioma español (Venezuela), trato de "tú". Acento verde de marca (#72DB5A).
-Contactos de ventas por WhatsApp: Jose Miguel (0422 240 2406) y Aristides Sanchez (0412 481 8151).
+Contactos de ventas por WhatsApp: Jose Linares (0422 240 2406) y Aristides Sanchez (0412 481 8151).
 
 ## Evidence on Hand
 No hay testimonios, clientes, logos de clientes ni cifras de uso. No inventarlos.

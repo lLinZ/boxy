@@ -201,11 +201,11 @@
 }
 @media (min-width: 1024px) {
   .lp-hero-grid {
-    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
 .lp-h1 {
-  font-size: clamp(2.7rem, 1.2rem + 5vw, 5.6rem);
+  font-size: clamp(2.5rem, 1.2rem + 3.6vw, 4.5rem);
   text-wrap: balance;
 }
 .lp-h1 .lp-marca {
@@ -333,13 +333,28 @@
   bottom: 6%;
   top: 6%;
 }
-.lp-fajo > svg {
+/* Billetes reales: los de dólar son horizontales y se giran para caber de pie en la celda */
+.lp-billete-h,
+.lp-billete-v {
   position: absolute;
+  object-fit: cover;
+  max-width: none;
+  border-radius: 2px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+.lp-billete-v {
   inset: 0;
   width: 100%;
   height: 100%;
-  border-radius: 0.6cqw;
-  filter: drop-shadow(0 0.3cqw 0.4cqw rgba(0, 0, 0, 0.45));
+  transform: translate(var(--dx, 0), var(--dy, 0)) rotate(var(--rot, 0deg));
+}
+.lp-billete-h {
+  left: 50%;
+  top: 50%;
+  /* la celda mide ~1 : 2,29 (ancho : alto), así el billete girado la llena */
+  width: 229%;
+  height: 43.7%;
+  transform: translate(-50%, -50%) translate(var(--dx, 0), var(--dy, 0)) rotate(calc(90deg + var(--rot, 0deg)));
 }
 
 /* Monedas: discos con canto */
@@ -481,44 +496,6 @@
   white-space: nowrap;
 }
 
-/* ── Ticket térmico ────────────────────────────────────────────────────── */
-.lp-ticket {
-  position: relative;
-  background: #fff;
-  color: #1a1d1b;
-  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
-  font-size: 0.84rem;
-  line-height: 1.55;
-  padding: 1.6rem 1.4rem 2.2rem;
-  box-shadow: 0 30px 50px -28px rgba(18, 21, 19, 0.45);
-  /* borde dentado del papel cortado */
-  -webkit-mask:
-    radial-gradient(circle 7px at 50% 100%, transparent 98%, #000) 50% 100% / 18px 14px repeat-x,
-    linear-gradient(#000, #000) top / 100% calc(100% - 13px) no-repeat;
-  mask:
-    radial-gradient(circle 7px at 50% 100%, transparent 98%, #000) 50% 100% / 18px 14px repeat-x,
-    linear-gradient(#000, #000) top / 100% calc(100% - 13px) no-repeat;
-}
-@keyframes lp-imprime {
-  from {
-    clip-path: inset(0 0 100% 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-.lp-ticket[data-visto='true'] {
-  animation: lp-imprime 1.6s steps(24, end) both;
-}
-.lp-ticket[data-visto='false'] {
-  clip-path: inset(0 0 100% 0);
-}
-.lp-ticket hr {
-  border: 0;
-  border-top: 1.5px dashed #b9beba;
-  margin: 0.6rem 0;
-}
-
 /* ── Estantería de rubros ──────────────────────────────────────────────── */
 .lp-estante {
   display: grid;
@@ -568,70 +545,6 @@
   background: var(--lp-tinta);
 }
 
-/* ── Banda de dinero (oscura) ──────────────────────────────────────────── */
-.lp-dinero {
-  background: var(--lp-grafito);
-  color: var(--lp-claro);
-  position: relative;
-  overflow: clip;
-}
-.lp-cifra {
-  font-family: var(--lp-display);
-  font-stretch: 125%;
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  line-height: 0.85;
-  font-size: clamp(3.6rem, 1rem + 11vw, 11rem);
-  transform: perspective(900px) rotateX(22deg);
-  transform-origin: 50% 100%;
-  color: var(--lp-claro);
-}
-.lp-fila-dinero {
-  display: grid;
-  gap: 2.25rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 2.25rem;
-}
-@media (min-width: 768px) {
-  .lp-fila-dinero {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* ── Contacto ──────────────────────────────────────────────────────────── */
-.lp-contacto {
-  display: grid;
-  gap: 1rem;
-}
-@media (min-width: 640px) {
-  .lp-contacto {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-.lp-tarjeta-wa {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  border-radius: 16px;
-  background: #fff;
-  padding: 1.5rem;
-  box-shadow: 0 1px 0 rgba(18, 21, 19, 0.06), 0 14px 30px -24px rgba(18, 21, 19, 0.5);
-  transition: transform 0.3s var(--lp-ease), box-shadow 0.3s;
-}
-.lp-tarjeta-wa:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 1px 0 rgba(18, 21, 19, 0.06), 0 26px 40px -24px rgba(37, 211, 102, 0.55);
-}
-.lp-tel {
-  font-family: var(--lp-display);
-  font-stretch: 118%;
-  font-weight: 800;
-  font-size: clamp(1.45rem, 1.1rem + 1vw, 1.85rem);
-  letter-spacing: -0.02em;
-  line-height: 1;
-  white-space: nowrap;
-}
-
 /* ── Preguntas ─────────────────────────────────────────────────────────── */
 .lp-pregunta {
   border-bottom: 1px solid rgba(18, 21, 19, 0.12);
@@ -667,15 +580,12 @@
     animation: none !important;
     transition: none !important;
   }
-  .lp-ticket[data-visto='false'] {
-    clip-path: none;
-  }
 }
 
 /* Etiquetas más compactas en teléfonos */
 @media (max-width: 639px) {
   .lp-hablador {
-    max-width: 10.5rem;
+    max-width: 11.5rem;
     padding: 0.5rem 0.6rem;
     border-radius: 8px;
   }
@@ -695,4 +605,361 @@
   .lp-escena {
     max-width: min(40rem, 88%);
   }
+}
+
+/* ── Capturas del sistema ──────────────────────────────────────────────── */
+.lp-pantalla {
+  overflow: hidden;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow:
+    0 1px 0 rgba(18, 21, 19, 0.08),
+    0 40px 70px -40px rgba(18, 21, 19, 0.55);
+  transition: transform 0.4s var(--lp-ease);
+}
+.lp-pantalla:hover {
+  transform: translateY(-3px);
+}
+.lp-pantalla-barra {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: #eceee9;
+  border-bottom: 1px solid rgba(18, 21, 19, 0.08);
+}
+.lp-pantalla-barra > span:not(.lp-pantalla-url) {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #cfd3cd;
+}
+.lp-pantalla-url {
+  margin-left: 12px;
+  flex: 1;
+  max-width: 22rem;
+  border-radius: 6px;
+  background: #fff;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  color: var(--lp-tinta-2);
+}
+.lp-pasos {
+  display: grid;
+  gap: 2rem;
+}
+@media (min-width: 768px) {
+  .lp-pasos {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.lp-paso-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  background: var(--lp-tinta);
+  color: var(--lp-verde);
+  font-family: var(--lp-display);
+  font-stretch: 125%;
+  font-weight: 800;
+}
+.lp-paso-num-oscuro {
+  background: var(--lp-verde);
+  color: #0c1a08;
+}
+
+/* ── Del Excel a Boxy ──────────────────────────────────────────────────── */
+.lp-excel {
+  display: grid;
+  gap: 1.5rem;
+  align-items: center;
+}
+@media (min-width: 1024px) {
+  .lp-excel {
+    grid-template-columns: minmax(0, 0.8fr) auto minmax(0, 1.2fr);
+  }
+}
+.lp-excel-flecha {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 999px;
+  background: var(--lp-verde);
+  color: #0c1a08;
+  transform: rotate(90deg);
+}
+@media (min-width: 1024px) {
+  .lp-excel-flecha {
+    transform: none;
+  }
+}
+.lp-hoja {
+  overflow: hidden;
+  border-radius: 10px;
+  background: #fff;
+  font-family: 'Calibri', 'Carlito', 'Inter Variable', sans-serif;
+  font-size: 0.9rem;
+  box-shadow: 0 30px 50px -34px rgba(18, 21, 19, 0.55);
+  transform: rotate(-1.5deg);
+}
+.lp-hoja-barra {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #1e7145;
+  color: #fff;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.lp-hoja-formula {
+  border-bottom: 1px solid #d9dcd7;
+  padding: 0.4rem 0.9rem;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  color: #444;
+}
+.lp-hoja table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.lp-hoja th,
+.lp-hoja td {
+  border: 1px solid #e1e3df;
+  padding: 0.42rem 0.6rem;
+  text-align: left;
+  white-space: nowrap;
+}
+.lp-hoja th {
+  background: #f3f4f2;
+  color: #6b716d;
+  font-weight: 500;
+  text-align: center;
+  width: 2rem;
+}
+.lp-hoja-error {
+  background: #fde7e4;
+  color: #b4231b;
+  font-weight: 600;
+}
+.lp-ventajas {
+  display: grid;
+  gap: 1rem;
+}
+@media (min-width: 640px) {
+  .lp-ventajas {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .lp-ventajas {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .lp-ventajas-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.lp-ventaja {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  border-radius: 14px;
+  background: #fff;
+  padding: 1.5rem;
+  box-shadow: 0 14px 30px -26px rgba(18, 21, 19, 0.5);
+  transition: transform 0.3s var(--lp-ease), box-shadow 0.3s;
+}
+.lp-ventaja:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 36px -26px rgba(18, 21, 19, 0.55);
+}
+.lp-ventaja-icono {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 12px;
+  background: var(--lp-tinta);
+  color: var(--lp-verde);
+}
+
+/* ── Sin internet ──────────────────────────────────────────────────────── */
+.lp-oscura {
+  background: var(--lp-grafito);
+  color: var(--lp-claro);
+}
+.lp-offline {
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+  max-width: 30rem;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lp-offline-icono {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--lp-grafito-2);
+  color: #f87171;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 30px 60px -30px rgba(0, 0, 0, 0.8);
+}
+.lp-offline-icono svg {
+  width: 52%;
+  height: 52%;
+}
+@keyframes lp-onda {
+  from {
+    transform: scale(0.55);
+    opacity: 0.55;
+  }
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+.lp-offline-onda {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(248, 113, 113, 0.5);
+  animation: lp-onda 3.2s ease-out infinite;
+}
+.lp-offline-onda-2 {
+  animation-delay: 1.6s;
+}
+.lp-offline-cola {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  background: #fbfbf8;
+  color: var(--lp-tinta);
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 16px 30px -14px rgba(0, 0, 0, 0.6);
+  animation: lp-flota 4s ease-in-out infinite;
+}
+.lp-offline-cola-1 {
+  top: 12%;
+  left: 0;
+}
+.lp-offline-cola-2 {
+  bottom: 12%;
+  right: 0;
+  animation-delay: -2s;
+}
+
+/* ── Tasas ─────────────────────────────────────────────────────────────── */
+.lp-tasa-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  background: #e3f5dc;
+  color: var(--lp-verde-tinta);
+  padding: 0.45rem 0.9rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+@keyframes lp-gira {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.lp-tasa-chip svg {
+  animation: lp-gira 3s linear infinite;
+}
+
+/* ── Asesoría ──────────────────────────────────────────────────────────── */
+.lp-asesoria {
+  background: var(--lp-verde);
+  color: #0c1a08;
+}
+.lp-dudas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.lp-dudas li {
+  border-radius: 999px;
+  background: rgba(12, 26, 8, 0.1);
+  padding: 0.55rem 1rem;
+  font-weight: 650;
+  font-size: 1.02rem;
+}
+.lp-asesor {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-radius: 18px;
+  background: var(--lp-grafito);
+  color: var(--lp-claro);
+  padding: 1.25rem;
+  box-shadow: 0 24px 40px -26px rgba(12, 26, 8, 0.8);
+  transition: transform 0.3s var(--lp-ease), box-shadow 0.3s;
+}
+.lp-asesor:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 32px 48px -26px rgba(12, 26, 8, 0.9);
+}
+.lp-asesor-iniciales {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 999px;
+  background: var(--lp-verde);
+  color: #0c1a08;
+  font-family: var(--lp-display);
+  font-stretch: 125%;
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+.lp-asesor-wa {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  background: #25d366;
+  color: #062a14;
+  min-height: 3rem;
+  padding: 0 1rem;
+  font-weight: 700;
+}
+.lp-tel {
+  font-family: var(--lp-display);
+  font-stretch: 118%;
+  font-weight: 800;
+  font-size: clamp(1.3rem, 1rem + 1vw, 1.75rem);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.lp-hablador .num {
+  white-space: nowrap;
 }

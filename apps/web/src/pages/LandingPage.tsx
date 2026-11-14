@@ -5,17 +5,27 @@ import { useNavigate } from 'react-router-dom'
 import {
   ArrowRight,
   ArrowUpRight,
+  Barcode,
+  Building2,
   Check,
-  CloudOff,
+  CloudUpload,
   Drill,
+  FileSpreadsheet,
   Footprints,
+  HandCoins,
+  History,
+  LineChart,
   Pill,
   Plus,
+  RefreshCw,
   ShieldCheck,
   Smartphone,
   SprayCan,
   Store,
+  Truck,
+  Wallet,
   Wheat,
+  WifiOff,
   type LucideIcon,
 } from 'lucide-react'
 import { api } from '../lib/api'
@@ -23,6 +33,16 @@ import { useAuth } from '../auth/AuthContext'
 import { n } from '../lib/format'
 import { enlaceWhatsApp } from '../lib/whatsapp'
 import type { ContactoVentas, Plan } from '../types'
+// Billetes reales: dólares (dominio público) y bolívares (CC0), de Wikimedia Commons.
+import usd100 from '../assets/billetes/usd100.webp'
+import usd20 from '../assets/billetes/usd20.webp'
+import usd5 from '../assets/billetes/usd5.webp'
+import bs100 from '../assets/billetes/bs100.webp'
+import bs50 from '../assets/billetes/bs50.webp'
+// Capturas reales de Boxy con los datos de la tienda de demostración.
+import imgPos from '../assets/sistema/pos.webp'
+import imgInventario from '../assets/sistema/inventario.webp'
+import imgTasas from '../assets/sistema/tasas.webp'
 
 interface ConfigPublica {
   modo: string
@@ -30,9 +50,8 @@ interface ConfigPublica {
   ventas?: ContactoVentas
 }
 
-/* ── Datos de ejemplo (sintéticos; la tasa es ilustrativa) ──────────────── */
-const TASA = 36.5
-const r2 = (v: number) => Math.round(v * 100) / 100
+/* ── Datos de ejemplo. La tasa es la BCV registrada en Boxy el 13/11/2026. ── */
+const TASA = 911.62
 const fmtBs = (v: number) => `Bs ${v.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 const fmtUsd = (v: number) => `$${v.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
@@ -54,38 +73,45 @@ const PRODUCTOS: Producto[] = [
   { rubro: 'Cosméticos', nombre: 'Protector solar FPS 50', precio: 12.9, stock: 9, minimo: 3, icono: SprayCan, tono: '#2dd4bf' },
 ]
 
-// Venta de ejemplo en una ferretería: IVA 16 %, IGTF 3 % solo sobre lo pagado en divisas.
-const LINEAS = [
-  { nombre: 'Taladro percutor 650 W', precio: 48 },
-  { nombre: 'Juego de brocas × 5', precio: 6.5 },
-  { nombre: 'Pintura blanca 1 galón', precio: 18 },
-]
-const PAGO_USD = 50
-const BASE = r2(LINEAS.reduce((s, l) => s + l.precio, 0))
-const IVA = r2(BASE * 0.16)
-const TOTAL = r2(BASE + IVA)
-const IGTF = r2(PAGO_USD * 0.03)
-const RESTO_BS = r2((TOTAL + IGTF - PAGO_USD) * TASA)
-
 const RUBROS = ['Abastos', 'Ferreterías', 'Ropa y calzado', 'Celulares', 'Farmacias', 'Cosméticos', 'Repuestos', 'Librerías', 'Minimarkets', 'Bodegones']
+
+const DEL_EXCEL: { icono: LucideIcon; t: string; d: string }[] = [
+  { icono: FileSpreadsheet, t: 'Sube tu Excel tal como está', d: 'Tus productos, precios y existencias entran a Boxy en un solo paso.' },
+  { icono: Smartphone, t: 'Tu teléfono es el escáner', d: 'Escaneas un QR en la caja y el celular lee los códigos de barra.' },
+  { icono: Barcode, t: 'Etiquetas con código de barras', d: 'Imprime las etiquetas de tus productos desde el inventario.' },
+  { icono: Truck, t: 'Compras que actualizan tu costo', d: 'Registras lo que le compras al proveedor y Boxy suma el stock y ajusta el costo.' },
+  { icono: History, t: 'Historial de cada movimiento', d: 'Sabes cuándo entró, salió o se ajustó cada producto, y quién lo hizo.' },
+  { icono: Building2, t: 'Varias sucursales', d: 'El inventario de cada tienda por separado y todo visible en un solo lugar.' },
+]
+
+const EL_DINERO: { icono: LucideIcon; t: string; d: string }[] = [
+  { icono: Wallet, t: 'Cierre de caja sin sorpresas', d: 'Cada cajero abre y cierra su turno. Al final del día cuadras con el reporte de caja.' },
+  { icono: HandCoins, t: 'Lo que te deben, anotado', d: 'Fiado con límite por cliente, abonos registrados y recordatorio de saldo por WhatsApp.' },
+  { icono: LineChart, t: 'Cuánto ganas de verdad', d: 'El margen de cada producto con lo que te costó, y cuáles se venden más.' },
+  { icono: ShieldCheck, t: 'Cada quien con su permiso', d: 'Cajero, gerente y dueño. Anular o dar descuento pide la clave del encargado.' },
+]
 
 /* ── Contactos de ventas por WhatsApp ─────────────────────────────────── */
 const MENSAJE_WA = 'Hola, quiero información sobre Boxy para mi negocio.'
 const CONTACTOS = [
-  { nombre: 'Jose Miguel', telefono: '04222402406' },
+  { nombre: 'Jose Linares', telefono: '04222402406' },
   { nombre: 'Aristides Sanchez', telefono: '04124818151' },
 ].map((c) => ({
   ...c,
   visible: c.telefono.replace(/^(\d{4})(\d{3})(\d{4})$/, '$1 $2 $3'),
+  iniciales: c.nombre
+    .split(' ')
+    .map((p) => p[0])
+    .join(''),
   enlace: enlaceWhatsApp(c.telefono, MENSAJE_WA) ?? '#contacto',
 }))
 
 const PREGUNTAS = [
-  { q: '¿Sirve para mi tipo de negocio?', a: 'Si vendes productos con precio y existencia, sí: abastos, ferreterías, tiendas de ropa y calzado, de celulares, farmacias, perfumerías, repuestos y más. Cada producto lleva su código, su IVA y su stock por sucursal.' },
+  { q: '¿Sirve para mi tipo de negocio?', a: 'Si vendes productos con precio y existencia, sí: abastos, ferreterías, tiendas de ropa y calzado, de celulares, farmacias, perfumerías, repuestos y más.' },
+  { q: 'Tengo todo en Excel, ¿lo pierdo?', a: 'No. Subes tu archivo de Excel y tus productos, precios y existencias pasan a Boxy. Si necesitas ayuda, te acompañamos por WhatsApp.' },
   { q: '¿Boxy emite factura fiscal?', a: 'No. Los tickets y comprobantes de Boxy son documentos no fiscales. Si tu negocio necesita factura fiscal, Boxy se conecta a una impresora fiscal homologada como ampliación opcional.' },
   { q: '¿Qué pasa si se va el internet?', a: 'Sigues vendiendo. Las ventas se guardan en el equipo y se envían solas cuando vuelve la conexión.' },
-  { q: '¿De dónde sale la tasa del dólar?', a: 'Boxy actualiza la tasa BCV dos veces al día. También muestra la tasa USDT como referencia, pero los cobros en bolívares se hacen siempre a tasa BCV.' },
-  { q: '¿Necesito comprar equipos?', a: 'No. Funciona en el navegador de la computadora, tablet o teléfono que ya tienes, y se instala como app. Sirve cualquier impresora térmica de 58 u 80 mm, y el teléfono puede ser tu escáner de códigos.' },
+  { q: '¿Necesito comprar equipos?', a: 'No. Funciona en el navegador de la computadora, tablet o teléfono que ya tienes, y se instala como app. Sirve cualquier impresora térmica de 58 u 80 mm.' },
   { q: '¿Cómo pago la mensualidad?', a: 'Por pago móvil, transferencia, USDT o Zelle. Reportas el pago desde el sistema y tu licencia se extiende al confirmarlo.' },
 ]
 
@@ -157,11 +183,11 @@ export function LandingPage() {
             <span className="lp-display text-xl">Boxy</span>
           </a>
           <div className="hidden items-center gap-7 text-[0.92rem] font-medium lg:flex">
-            <a className="lp-enlace" href="#cobrar">Cobrar</a>
-            <a className="lp-enlace" href="#rubros">Rubros</a>
-            <a className="lp-enlace" href="#dinero">Dinero</a>
+            <a className="lp-enlace" href="#sistema">El sistema</a>
+            <a className="lp-enlace" href="#excel">Inventario</a>
+            <a className="lp-enlace" href="#sin-internet">Sin internet</a>
             <a className="lp-enlace" href="#precios">Precios</a>
-            <a className="lp-enlace" href="#contacto">Contacto</a>
+            <a className="lp-enlace" href="#contacto">Asesoría</a>
           </div>
           <div className="flex items-center gap-2">
             {user ? (
@@ -193,22 +219,22 @@ export function LandingPage() {
           <div className="lp-wrap lp-hero-grid">
             <div>
               <h1 id="titulo-portada" className="lp-display lp-h1 lp-entra">
-                Cobra en $ y Bs. <span className="lp-marca">Cuadra la caja.</span>
+                Cobra en divisas y bolívares <span className="lp-marca">sin enredos al cuadrar.</span>
               </h1>
               <p className="lp-entra lp-entra-2 mt-6 max-w-[34rem] text-pretty text-lg leading-relaxed text-[var(--lp-claro-2)] sm:text-xl">
-                Punto de venta, inventario y control de caja para tu abasto, ferretería, tienda de ropa, de celulares o
-                farmacia. IVA, IGTF y vuelto a la tasa BCV del día, aunque se caiga el internet.
+                Todo en una sola plataforma: punto de venta, inventario y control de impuestos (IVA, IGTF, BCV) operando
+                100% offline.
               </p>
               <div className="lp-entra lp-entra-3 mt-9 flex flex-col gap-3 sm:flex-row">
                 <button type="button" className="lp-btn lp-btn-verde" onClick={() => empezar()}>
                   {textoEmpezar} <ArrowRight className="h-4 w-4" />
                 </button>
                 <a className="lp-btn lp-btn-linea text-[var(--lp-claro)]" href="#contacto">
-                  <IconoWhatsApp className="h-4 w-4" /> Hablar con ventas
+                  <IconoWhatsApp className="h-4 w-4" /> Pedir asesoría
                 </a>
               </div>
               <ul className="lp-entra lp-entra-3 mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-[var(--lp-claro-2)]">
-                {['Tasa BCV dos veces al día', registroAbierto ? 'Sin tarjeta de crédito' : 'Soporte por WhatsApp', 'Funciona sin internet'].map((t) => (
+                {['Tasa BCV automática', registroAbierto ? 'Sin tarjeta de crédito' : 'Asesoría por WhatsApp', 'Funciona sin internet'].map((t) => (
                   <li key={t} className="flex items-center gap-1.5">
                     <Check className="h-4 w-4 text-[var(--lp-verde)]" strokeWidth={2.75} /> {t}
                   </li>
@@ -236,33 +262,70 @@ export function LandingPage() {
           </div>
         </div>
 
-        {/* ── Cobrar ────────────────────────────────────────────────────── */}
-        <section id="cobrar" className="scroll-mt-16 py-24 lg:py-32">
-          <div className="lp-wrap grid gap-14 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center">
-            <div>
-              <h2 className="lp-h2">Un cliente, dos monedas, una sola pantalla.</h2>
-              <p className="mt-6 max-w-xl text-pretty text-lg text-[var(--lp-tinta-2)]">
-                El cliente paga $50 en efectivo y el resto por pago móvil. Boxy saca el IGTF solo sobre los dólares,
-                convierte el resto a la tasa BCV y te dice el vuelto.
+        {/* ── El sistema: la caja real ──────────────────────────────────── */}
+        <section id="sistema" className="scroll-mt-16 py-24 lg:py-32">
+          <div className="lp-wrap">
+            <div className="grid gap-6 lg:grid-cols-2 lg:items-end">
+              <h2 className="lp-h2">Tocas el producto. Boxy hace las cuentas.</h2>
+              <p className="max-w-xl text-pretty text-lg text-[var(--lp-tinta-2)] lg:justify-self-end">
+                Esta es la caja de Boxy. Buscas o escaneas, y el total sale en dólares y en bolívares con el IVA ya sumado.
+                Cobras con el método que traiga tu cliente.
               </p>
-              <dl className="mt-10 divide-y divide-[rgba(18,21,19,0.12)] border-y border-[rgba(18,21,19,0.12)]">
-                <FilaCobro cifra={`${fmtUsd(PAGO_USD)} + ${fmtBs(RESTO_BS)}`} t="Bolívares y dólares en la misma venta" d="Efectivo, pago móvil, Zelle, USDT, punto de venta o fiado." />
-                <FilaCobro cifra={`IGTF ${fmtUsd(IGTF)}`} t="IVA e IGTF sin errores" d="IVA de 16 %, 8 % o exento según el producto. IGTF solo sobre lo que pagan las divisas." />
-                <FilaCobro cifra="Vuelto Bs 0,00" t="Vuelto donde lo quieras dar" d="En bolívares, en dólares o por pago móvil." />
-              </dl>
             </div>
-            <Ticket />
+            <Pantalla
+              src={imgPos}
+              alt="Caja de Boxy con una venta de harina, Coca-Cola, café y arroz, y el total en dólares y en bolívares a tasa BCV"
+              className="mt-14"
+            />
+            <ol className="lp-pasos mt-10">
+              {[
+                ['Busca o escanea', 'Por nombre, por código o con el lector.'],
+                ['Ve el total en $ y Bs', 'A la tasa BCV del día, con el IVA incluido.'],
+                ['Cobra como quieras', 'Efectivo, pago móvil, Zelle, USDT o fiado.'],
+              ].map(([t, d], i) => (
+                <li key={t}>
+                  <span className="lp-paso-num">{i + 1}</span>
+                  <p className="mt-4 text-lg font-semibold">{t}</p>
+                  <p className="mt-1 text-[var(--lp-tinta-2)]">{d}</p>
+                </li>
+              ))}
+            </ol>
           </div>
         </section>
 
-        {/* ── Rubros e inventario ───────────────────────────────────────── */}
-        <section id="rubros" className="scroll-mt-16 bg-[var(--lp-papel-2)] py-24 lg:py-32">
+        {/* ── Del Excel a Boxy ──────────────────────────────────────────── */}
+        <section id="excel" className="scroll-mt-16 bg-[var(--lp-papel-2)] py-24 lg:py-32">
+          <div className="lp-wrap">
+            <h2 className="lp-h2 max-w-4xl">¿Todavía llevas tu negocio en Excel?</h2>
+            <p className="mt-6 max-w-2xl text-pretty text-lg text-[var(--lp-tinta-2)]">
+              Fórmulas que se rompen, la tasa escrita a mano, el stock que nunca cuadra. Sube ese mismo archivo y en
+              minutos tienes tu inventario ordenado.
+            </p>
+
+            <div className="lp-excel mt-14">
+              <HojaExcel />
+              <div className="lp-excel-flecha" aria-hidden>
+                <ArrowRight className="h-7 w-7" />
+              </div>
+              <Pantalla src={imgInventario} alt="Inventario de Boxy con productos, costo, precio, margen y existencias" />
+            </div>
+
+            <ul className="lp-ventajas mt-16">
+              {DEL_EXCEL.map((v) => (
+                <Ventaja key={v.t} {...v} />
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {/* ── Rubros ────────────────────────────────────────────────────── */}
+        <section id="rubros" className="scroll-mt-16 py-24 lg:py-32">
           <div className="lp-wrap">
             <div className="grid gap-6 lg:grid-cols-2 lg:items-end">
               <h2 className="lp-h2">Sirve para lo que vendas.</h2>
               <p className="max-w-xl text-pretty text-lg text-[var(--lp-tinta-2)] lg:justify-self-end">
-                Si tiene código, precio y existencia, Boxy lo controla: stock por sucursal, kardex de cada movimiento y
-                alertas cuando algo se acaba o se vence.
+                Cada producto con su precio en dólares, su equivalente en bolívares y su existencia. Boxy te avisa cuando
+                algo se está acabando.
               </p>
             </div>
             <ul className="lp-estante mt-14">
@@ -270,35 +333,83 @@ export function LandingPage() {
                 <TarjetaProducto key={p.nombre} p={p} semilla={i} />
               ))}
             </ul>
-            <ul className="mt-12 flex flex-wrap gap-x-8 gap-y-3 text-[0.98rem] font-medium">
-              {['Carga de productos por Excel', 'El teléfono como escáner', 'Etiquetas con código de barras', 'Compras con costo promedio', 'Varias sucursales'].map((t) => (
-                <li key={t} className="flex items-center gap-2">
-                  <Plus className="h-4 w-4 text-[var(--lp-verde-tinta)]" strokeWidth={2.75} /> {t}
-                </li>
-              ))}
-            </ul>
+          </div>
+        </section>
+
+        {/* ── Sin internet ──────────────────────────────────────────────── */}
+        <section id="sin-internet" className="lp-oscura scroll-mt-16 py-24 lg:py-32">
+          <div className="lp-wrap grid items-center gap-16 lg:grid-cols-2">
+            <div className="lp-offline" aria-hidden>
+              <span className="lp-offline-onda lp-offline-onda-1" />
+              <span className="lp-offline-onda lp-offline-onda-2" />
+              <span className="lp-offline-icono">
+                <WifiOff strokeWidth={1.75} />
+              </span>
+              <span className="lp-offline-cola lp-offline-cola-1">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-amber-400" /> 3 ventas guardadas en el equipo
+              </span>
+              <span className="lp-offline-cola lp-offline-cola-2">
+                <CloudUpload className="h-4 w-4 shrink-0 text-[var(--lp-verde)]" /> Enviadas al volver la conexión
+              </span>
+            </div>
+            <div>
+              <h2 className="lp-h2">¿Se fue el internet? Tú sigues vendiendo.</h2>
+              <p className="mt-6 max-w-xl text-pretty text-lg text-[var(--lp-claro-2)]">
+                Boxy guarda cada venta en tu equipo mientras no hay conexión. Cuando el internet vuelve, las envía solas.
+                Nadie se queda sin cobrar y no tienes que anotar nada en un papel.
+              </p>
+              <ol className="mt-10 space-y-5">
+                {[
+                  ['Se cae la conexión', 'La caja sigue abierta y cobrando con normalidad.'],
+                  ['Las ventas quedan guardadas', 'En la computadora, tablet o teléfono donde vendes.'],
+                  ['Vuelve el internet', 'Todo se sincroniza solo, sin repetir nada.'],
+                ].map(([t, d], i) => (
+                  <li key={t} className="flex gap-4">
+                    <span className="lp-paso-num lp-paso-num-oscuro">{i + 1}</span>
+                    <div>
+                      <p className="text-lg font-semibold">{t}</p>
+                      <p className="mt-0.5 text-[var(--lp-claro-2)]">{d}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Tasas automáticas ─────────────────────────────────────────── */}
+        <section id="tasas" className="scroll-mt-16 py-24 lg:py-32">
+          <div className="lp-wrap grid items-center gap-14 lg:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)]">
+            <div>
+              <span className="lp-tasa-chip">
+                <RefreshCw className="h-4 w-4" /> 9:00 a. m. · 1:00 p. m.
+              </span>
+              <h2 className="lp-h2 mt-6">La tasa del dólar se actualiza sola.</h2>
+              <p className="mt-6 max-w-xl text-pretty text-lg text-[var(--lp-tinta-2)]">
+                Boxy trae la tasa oficial del BCV dos veces al día. Tus precios están en dólares y el monto en bolívares se
+                calcula solo. Se acabó cambiar la tasa a mano en cada celda.
+              </p>
+              <ul className="mt-8 space-y-3 text-[1.02rem]">
+                {['Cobros en bolívares siempre a tasa BCV', 'Tasa USDT como referencia', 'La misma tasa en todas tus cajas y sucursales'].map((t) => (
+                  <li key={t} className="flex items-start gap-2.5">
+                    <Check className="mt-1 h-4 w-4 shrink-0 text-[var(--lp-verde-tinta)]" strokeWidth={2.75} /> {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <Pantalla src={imgTasas} alt="Pantalla de tasas de Boxy con BCV Bs 911,62, USDT Bs 1.065,16 y el botón de sincronizar" />
           </div>
         </section>
 
         {/* ── Dinero ────────────────────────────────────────────────────── */}
-        <section id="dinero" className="lp-dinero scroll-mt-16 py-24 lg:py-32">
+        <section id="dinero" className="scroll-mt-16 bg-[var(--lp-papel-2)] py-24 lg:py-32">
           <div className="lp-wrap">
             <h2 className="lp-h2 max-w-4xl">Sabes cuánto entró, cuánto te deben y cuánto ganas.</h2>
-            <div className="mt-14 overflow-hidden pb-2">
-              <p className="lp-cifra num" aria-label="Ejemplo: ventas del día 1.284,50 dólares">
-                $1.284,50
-              </p>
-              <p className="mt-4 text-sm text-[var(--lp-claro-2)]">Ventas del día en una tienda de ejemplo, en vivo desde la caja.</p>
-            </div>
-            <div className="lp-fila-dinero mt-12">
-              <ColDinero t="Cierre de caja sin sorpresas" d="Turnos por cajero, cierre con arqueo a ciegas y reporte Z al final del día." />
-              <ColDinero t="Lo que te deben, anotado" d="Fiado con límite por cliente, abonos registrados y recordatorio de saldo por WhatsApp." />
-              <ColDinero t="Ganancia real por producto" d="Margen con el costo promedio de tus compras y los productos que más rotan." />
-            </div>
-            <div className="mt-14 grid gap-4 sm:grid-cols-2">
-              <Aviso icono={<CloudOff className="h-5 w-5" />} t="Se fue el internet. La caja sigue abierta." d="Las ventas se guardan en el equipo y se envían solas al volver la conexión." />
-              <Aviso icono={<ShieldCheck className="h-5 w-5" />} t="Cada quien con su permiso." d="Cajero, gerente y administrador; anulaciones y descuentos con PIN de supervisor." />
-            </div>
+            <ul className="lp-ventajas lp-ventajas-4 mt-14">
+              {EL_DINERO.map((v) => (
+                <Ventaja key={v.t} {...v} />
+              ))}
+            </ul>
           </div>
         </section>
 
@@ -341,11 +452,7 @@ export function LandingPage() {
                       {p.features?.monitor && <Li oscuro={destacado}>Monitor de ventas en vivo</Li>}
                       {p.features?.analisis && <Li oscuro={destacado}>Análisis de rentabilidad</Li>}
                     </ul>
-                    <button
-                      type="button"
-                      className={`lp-btn mt-8 w-full ${destacado ? 'lp-btn-verde' : 'lp-btn-tinta'}`}
-                      onClick={() => empezar(p.codigo)}
-                    >
+                    <button type="button" className={`lp-btn mt-8 w-full ${destacado ? 'lp-btn-verde' : 'lp-btn-tinta'}`} onClick={() => empezar(p.codigo)}>
                       {registroAbierto ? `Empezar con ${p.nombre}` : `Quiero el plan ${p.nombre}`}
                     </button>
                   </article>
@@ -355,33 +462,40 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── Contacto ──────────────────────────────────────────────────── */}
-        <section id="contacto" className="scroll-mt-16 bg-[var(--lp-papel-2)] py-24 lg:py-32">
-          <div className="lp-wrap grid gap-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-center">
+        {/* ── Asesoría por WhatsApp ─────────────────────────────────────── */}
+        <section id="contacto" className="lp-asesoria scroll-mt-16 py-24 lg:py-32">
+          <div className="lp-wrap grid gap-14 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center">
             <div>
-              <h2 className="lp-h2">Escríbenos. Te responde una persona.</h2>
-              <p className="mt-6 max-w-lg text-pretty text-lg text-[var(--lp-tinta-2)]">
-                Por WhatsApp te mostramos Boxy funcionando con productos de tu rubro, te ayudamos a cargar tu inventario y
-                resolvemos tus dudas sobre los planes.
+              <h2 className="lp-h2">¿No sabes por dónde empezar?</h2>
+              <ul className="lp-dudas mt-8">
+                {['¿Necesitas ayuda directa?', '¿Quieres una asesoría?', '¿Pasar tu Excel a Boxy?', '¿Quieres saber más?'].map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+              <p className="mt-8 max-w-xl text-pretty text-lg text-[#14361a]">
+                Escríbenos por WhatsApp. Te atiende una persona: te mostramos Boxy con productos de tu negocio, te
+                ayudamos a cargar tu inventario y te decimos qué plan te conviene.
               </p>
             </div>
-            <div className="lp-contacto">
+            <div className="grid gap-4">
               {CONTACTOS.map((c) => (
                 <a
                   key={c.telefono}
                   href={c.enlace}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="lp-tarjeta-wa group"
+                  className="lp-asesor group"
                   aria-label={`Escribir a ${c.nombre} por WhatsApp al ${c.visible}`}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-lg font-semibold">{c.nombre}</p>
-                    <ArrowUpRight className="h-5 w-5 text-[var(--lp-tinta-2)] transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                  </div>
-                  <p className="lp-tel num">{c.visible}</p>
-                  <span className="lp-btn lp-btn-wa w-full">
-                    <IconoWhatsApp className="h-5 w-5" /> Escribir por WhatsApp
+                  <span className="lp-asesor-iniciales">{c.iniciales}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-lg font-semibold">{c.nombre}</span>
+                    <span className="lp-tel num mt-1 block">{c.visible}</span>
+                  </span>
+                  <span className="lp-asesor-wa">
+                    <IconoWhatsApp className="h-6 w-6" />
+                    <span className="hidden sm:inline">Escribir</span>
+                    <ArrowUpRight className="hidden h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 sm:block" />
                   </span>
                 </a>
               ))}
@@ -422,8 +536,8 @@ export function LandingPage() {
             <span className="lp-letra lp-letra-bs !-bottom-[30%]">Bs</span>
           </div>
           <div className="lp-wrap flex flex-col items-start gap-10 py-24 lg:flex-row lg:items-end lg:justify-between lg:py-32">
-            <h2 id="titulo-cierre" className="lp-display max-w-3xl text-[clamp(2.6rem,1.4rem+4.6vw,5.4rem)]">
-              Abre tu caja en Boxy <span className="text-[var(--lp-verde)]">hoy.</span>
+            <h2 id="titulo-cierre" className="lp-display max-w-3xl text-[clamp(2.4rem,1.3rem+4.2vw,5rem)]">
+              Deja el Excel. Abre tu caja en Boxy <span className="text-[var(--lp-verde)]">hoy.</span>
             </h2>
             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
               <button type="button" className="lp-btn lp-btn-verde" onClick={() => empezar()}>
@@ -445,9 +559,9 @@ export function LandingPage() {
           </div>
           <ul className="space-y-1 text-sm">
             {[
-              ['#cobrar', 'Cobrar'],
-              ['#rubros', 'Rubros'],
-              ['#dinero', 'Dinero'],
+              ['#sistema', 'El sistema'],
+              ['#excel', 'Inventario'],
+              ['#sin-internet', 'Sin internet'],
               ['#precios', 'Precios'],
               ['#preguntas', 'Preguntas'],
             ].map(([h, t]) => (
@@ -469,7 +583,10 @@ export function LandingPage() {
           </ul>
         </div>
         <div className="lp-wrap flex flex-col gap-2 border-t border-white/10 py-6 text-xs sm:flex-row sm:justify-between">
-          <p>© {new Date().getFullYear()} Boxy. Los precios, montos y la tasa de esta página son ejemplos.</p>
+          <p>
+            © {new Date().getFullYear()} Boxy. Precios de ejemplo a tasa BCV de Bs 911,62. Billetes: Wikimedia Commons (dominio
+            público y CC0).
+          </p>
           <p>Los comprobantes de Boxy son documentos no fiscales.</p>
         </div>
       </footer>
@@ -479,34 +596,50 @@ export function LandingPage() {
 
 /* ══ Escena de la portada ═══════════════════════════════════════════════ */
 
-// Posición de cada etiqueta alrededor de la gaveta (en % de la escena).
 const POS_TAGS: { top: string; left?: string; right?: string; r: number; d: number; t: number; p: number; movil: boolean }[] = [
   { top: '-2%', left: '0%', r: -6, d: 1.0, t: 4.2, p: 14, movil: true },
   { top: '-6%', right: '0%', r: 5, d: 1.15, t: 3.6, p: -10, movil: true },
-  { top: '36%', right: '-3%', r: -4, d: 1.3, t: 4.6, p: 18, movil: false },
-  { top: '58%', left: '-4%', r: 4, d: 1.45, t: 3.9, p: -16, movil: false },
+  { top: '40%', right: '-9%', r: -4, d: 1.3, t: 4.6, p: 18, movil: false },
+  { top: '62%', left: '-8%', r: 4, d: 1.45, t: 3.9, p: -16, movil: false },
   { top: '86%', left: '24%', r: -3, d: 1.6, t: 4.4, p: 12, movil: true },
   { top: '78%', right: '-2%', r: 6, d: 1.75, t: 3.7, p: -14, movil: false },
 ]
 
+const CELDAS_BILLETES: { src: string; horizontal: boolean }[] = [
+  { src: usd100, horizontal: true },
+  { src: usd20, horizontal: true },
+  { src: usd5, horizontal: true },
+  { src: bs100, horizontal: false },
+  { src: bs50, horizontal: false },
+]
+
 function EscenaGaveta() {
   return (
-    <div className="lp-escena" role="img" aria-label="Gaveta de caja abierta con billetes en dólares y bolívares, monedas y etiquetas de productos de distintas tiendas">
+    <div className="lp-escena" role="img" aria-label="Gaveta de caja abierta con billetes de dólares y bolívares, monedas y etiquetas de productos de distintas tiendas">
       <div className="lp-gaveta-vista">
         <div className="lp-gaveta">
           <div className="lp-bandeja">
             <div className="lp-bandeja-piso">
-              <Celda><Fajo moneda="usd" valor="100" /></Celda>
-              <Celda><Fajo moneda="usd" valor="20" /></Celda>
-              <Celda><Fajo moneda="usd" valor="5" /></Celda>
-              <Celda><Fajo moneda="bs" valor="500" /></Celda>
-              <Celda><Fajo moneda="bs" valor="100" /></Celda>
+              {CELDAS_BILLETES.map((c) => (
+                <div key={c.src} className="lp-celda">
+                  <div className="lp-fajo">
+                    {[2, 1, 0].map((k) => (
+                      <img
+                        key={k}
+                        src={c.src}
+                        alt=""
+                        decoding="async"
+                        className={c.horizontal ? 'lp-billete-h' : 'lp-billete-v'}
+                        style={{ '--dx': `${k * 4}%`, '--dy': `${-k * 2.5}%`, '--rot': `${k ? (k % 2 ? -2.5 : 1.5) : 0}deg` } as CSSProperties}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
               {[0, 1, 2, 3, 4].map((i) => (
                 <div key={i} className="lp-celda lp-celda-monedas">
                   <span className={`lp-moneda ${i % 2 ? 'lp-moneda-plata' : ''}`} style={{ transform: 'translate(-18%, -8%)' }} />
-                  <span className={`lp-moneda ${i % 2 ? '' : 'lp-moneda-plata'}`} style={{ transform: 'translate(22%, 14%)' }}>
-                    {i < 2 ? '1' : i < 4 ? 'Bs' : '50'}
-                  </span>
+                  <span className={`lp-moneda ${i % 2 ? '' : 'lp-moneda-plata'}`} style={{ transform: 'translate(22%, 14%)' }} />
                 </div>
               ))}
             </div>
@@ -539,72 +672,6 @@ function EscenaGaveta() {
   )
 }
 
-function Celda({ children }: { children: ReactNode }) {
-  return <div className="lp-celda">{children}</div>
-}
-
-function Fajo({ moneda, valor }: { moneda: 'usd' | 'bs'; valor: string }) {
-  return (
-    <div className="lp-fajo">
-      {[2, 1, 0].map((k) => (
-        <Billete key={k} moneda={moneda} valor={valor} style={{ transform: `translate(${k * 3}%, ${-k * 2.2}%) rotate(${k ? (k % 2 ? -2 : 1.5) : 0}deg)` }} />
-      ))}
-    </div>
-  )
-}
-
-/* Guilloché: rosetas y ondas calculadas (geometría, no ilustración). */
-function roseta(cx: number, cy: number, R: number, A: number, k: number, fase: number) {
-  const pts: string[] = []
-  for (let i = 0; i <= 360; i++) {
-    const t = (i / 360) * Math.PI * 2
-    const r = R + A * Math.sin(k * t + fase)
-    pts.push(`${(cx + r * Math.cos(t)).toFixed(2)},${(cy + r * Math.sin(t)).toFixed(2)}`)
-  }
-  return pts.join(' ')
-}
-function onda(x0: number, x1: number, y: number, A: number, periodo: number, fase: number) {
-  const pts: string[] = []
-  for (let x = x0; x <= x1; x += 1.5) pts.push(`${x.toFixed(1)},${(y + A * Math.sin((x / periodo) * Math.PI * 2 + fase)).toFixed(2)}`)
-  return pts.join(' ')
-}
-const ROSETAS = [0, 1, 2, 3, 4, 5].map((j) => roseta(60, 125, 22 + j * 3.2, 3 + (j % 3), 12 + j * 2, j * 0.6))
-const ONDAS = [0, 1, 2, 3, 4, 5, 6, 7].map((j) => onda(10, 110, 30 + j * 3, 2.2, 22, j * 0.8))
-const ONDAS_B = [0, 1, 2, 3, 4, 5, 6, 7].map((j) => onda(10, 110, 196 + j * 3, 2.2, 22, -j * 0.8))
-
-function Billete({ moneda, valor, style }: { moneda: 'usd' | 'bs'; valor: string; style?: CSSProperties }) {
-  const fondo = moneda === 'usd' ? 'var(--lp-usd)' : 'var(--lp-bs)'
-  const tinta = moneda === 'usd' ? 'var(--lp-usd-tinta)' : 'var(--lp-bs-tinta)'
-  const simbolo = moneda === 'usd' ? '$' : 'Bs'
-  return (
-    <svg viewBox="0 0 120 250" preserveAspectRatio="none" style={style} aria-hidden>
-      <rect width="120" height="250" rx="5" fill={fondo} />
-      <rect x="5" y="5" width="110" height="240" rx="3" fill="none" stroke={tinta} strokeOpacity="0.55" strokeWidth="1.2" />
-      <rect x="8.5" y="8.5" width="103" height="233" rx="2" fill="none" stroke={tinta} strokeOpacity="0.3" strokeWidth="0.5" strokeDasharray="1 1.4" />
-      <g fill="none" stroke={tinta} strokeWidth="0.45" strokeOpacity="0.45">
-        {ONDAS.map((d, i) => <polyline key={`a${i}`} points={d} />)}
-        {ONDAS_B.map((d, i) => <polyline key={`b${i}`} points={d} />)}
-      </g>
-      <g fill="none" stroke={tinta} strokeWidth="0.5" strokeOpacity="0.6">
-        {ROSETAS.map((d, i) => <polygon key={i} points={d} />)}
-      </g>
-      <circle cx="60" cy="125" r="17" fill={fondo} stroke={tinta} strokeOpacity="0.7" strokeWidth="0.8" />
-      <text x="60" y="125" textAnchor="middle" dominantBaseline="central" fill={tinta} fontFamily="Archivo Variable, sans-serif" fontWeight="900" fontSize={moneda === 'usd' ? 20 : 15} style={{ fontStretch: '125%' }}>
-        {simbolo}
-      </text>
-      <text x="16" y="24" fill={tinta} fontFamily="Archivo Variable, sans-serif" fontWeight="900" fontSize="21" style={{ fontStretch: '125%' }}>
-        {valor}
-      </text>
-      <text x="104" y="238" textAnchor="end" fill={tinta} fontFamily="Archivo Variable, sans-serif" fontWeight="900" fontSize="21" style={{ fontStretch: '125%' }}>
-        {valor}
-      </text>
-      <text x="108" y="125" textAnchor="middle" fill={tinta} fillOpacity="0.7" fontFamily="ui-monospace, monospace" fontSize="6" transform="rotate(90 108 125)" letterSpacing="1">
-        BX {moneda === 'usd' ? '0482' : '1907'} {valor.padStart(4, '0')}
-      </text>
-    </svg>
-  )
-}
-
 function Hablador({ p }: { p: Producto }) {
   const Icono = p.icono
   return (
@@ -623,66 +690,82 @@ function Hablador({ p }: { p: Producto }) {
 
 /* ══ Piezas de las secciones ════════════════════════════════════════════ */
 
-function FilaCobro({ cifra, t, d }: { cifra: string; t: string; d: string }) {
+/** Captura real del sistema dentro de un marco de navegador. */
+function Pantalla({ src, alt, className = '' }: { src: string; alt: string; className?: string }) {
   return (
-    <div className="grid gap-1.5 py-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-baseline sm:gap-6">
-      <dt className="text-lg font-semibold">{t}</dt>
-      <dd className="lp-display num text-xl text-[var(--lp-verde-tinta)] sm:row-span-2 sm:text-right">{cifra}</dd>
-      <dd className="text-[var(--lp-tinta-2)]">{d}</dd>
-    </div>
+    <figure className={`lp-pantalla ${className}`}>
+      <div className="lp-pantalla-barra" aria-hidden>
+        <span />
+        <span />
+        <span />
+        <span className="lp-pantalla-url">boxy.venz.cloud</span>
+      </div>
+      <img src={src} alt={alt} loading="lazy" decoding="async" className="block w-full" />
+    </figure>
   )
 }
 
-/** Ticket térmico de la venta de ejemplo; se "imprime" una vez al entrar en vista. */
-function Ticket() {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visto, setVisto] = useState(false)
-  useEffect(() => {
-    const el = ref.current
-    if (!el || !('IntersectionObserver' in window)) {
-      setVisto(true)
-      return
-    }
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) {
-          setVisto(true)
-          io.disconnect()
-        }
-      },
-      { threshold: 0.35 },
-    )
-    io.observe(el)
-    return () => io.disconnect()
-  }, [])
-  const fila = (a: string, b: string, fuerte = false) => (
-    <div className={`flex justify-between gap-4 ${fuerte ? 'text-base font-bold' : ''}`}>
-      <span>{a}</span>
-      <span className="num">{b}</span>
-    </div>
-  )
+/** Una hoja de cálculo típica de un negocio llevado en Excel. */
+function HojaExcel() {
+  const filas: [string, string, string, string, boolean?][] = [
+    ['Harina PAN', '1,1', '=B2*TASA', '120'],
+    ['Taladro 650W', '48', '#¡REF!', '?', true],
+    ['Zapatos T40', '32', '=B4*36,5', '14'],
+    ['Cargador USBC', '9,5', '8.660,39', '-3', true],
+    ['Acetaminofen', '1,8', '=B6*TASA', '48'],
+  ]
   return (
-    <div ref={ref} className="mx-auto w-full max-w-[24rem] -rotate-1">
-      <div className="lp-ticket" data-visto={visto} aria-label="Ticket de ejemplo de una venta en una ferretería">
-        <p className="text-center font-bold">FERRETERÍA EL TORNILLO</p>
-        <p className="text-center text-xs">Documento no fiscal · Ejemplo</p>
-        <p className="text-center text-xs">Tasa BCV de ejemplo {TASA.toFixed(2).replace('.', ',')}</p>
-        <hr />
-        {LINEAS.map((l) => fila(`1 × ${l.nombre}`, fmtUsd(l.precio)))}
-        <hr />
-        {fila('Base imponible', fmtUsd(BASE))}
-        {fila('IVA 16 %', fmtUsd(IVA))}
-        {fila('TOTAL', fmtUsd(TOTAL), true)}
-        {fila('', fmtBs(TOTAL * TASA))}
-        <hr />
-        {fila('Efectivo USD', fmtUsd(PAGO_USD))}
-        {fila('IGTF 3 % sobre divisas', fmtUsd(IGTF))}
-        {fila('Pago móvil', fmtBs(RESTO_BS))}
-        {fila('Vuelto', 'Bs 0,00', true)}
-        <hr />
-        <p className="text-center font-bold">¡Gracias por su compra!</p>
+    <figure className="lp-hoja" aria-label="Ejemplo de una hoja de Excel desordenada, con fórmulas rotas y la tasa escrita a mano">
+      <div className="lp-hoja-barra">
+        <FileSpreadsheet className="h-4 w-4" /> inventario_FINAL_v3 (2).xlsx
       </div>
-    </div>
+      <div className="lp-hoja-formula">
+        <span className="font-semibold">fx</span> =B3*TASA_DEL_LUNES
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th />
+            <th>A</th>
+            <th>B</th>
+            <th>C</th>
+            <th>D</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>1</th>
+            <td className="font-semibold">Producto</td>
+            <td className="font-semibold">$</td>
+            <td className="font-semibold">Bs</td>
+            <td className="font-semibold">Stock</td>
+          </tr>
+          {filas.map(([a, b, c, d, mal], i) => (
+            <tr key={a}>
+              <th>{i + 2}</th>
+              <td>{a}</td>
+              <td>{b}</td>
+              <td className={mal ? 'lp-hoja-error' : ''}>{c}</td>
+              <td className={d.startsWith('-') || d === '?' ? 'lp-hoja-error' : ''}>{d}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </figure>
+  )
+}
+
+function Ventaja({ icono: Icono, t, d }: { icono: LucideIcon; t: string; d: string }) {
+  return (
+    <li className="lp-ventaja">
+      <span className="lp-ventaja-icono">
+        <Icono className="h-6 w-6" strokeWidth={2} />
+      </span>
+      <div>
+        <p className="text-lg font-semibold leading-snug">{t}</p>
+        <p className="mt-1.5 text-[var(--lp-tinta-2)]">{d}</p>
+      </div>
+    </li>
   )
 }
 
@@ -697,10 +780,8 @@ function TarjetaProducto({ p, semilla }: { p: Producto; semilla: number }) {
         <span className="lp-producto-icono" style={{ background: `${p.tono}22`, color: p.tono }}>
           <Icono className="h-6 w-6" strokeWidth={2} />
         </span>
-        <span
-          className={`rounded-full px-2.5 py-1 text-xs font-bold ${bajo ? 'bg-[#fde3d3] text-[#8a3b0c]' : 'bg-[#e3f5dc] text-[var(--lp-verde-tinta)]'}`}
-        >
-          {bajo ? `Quedan ${p.stock} · bajo mínimo` : `${p.stock} en existencia`}
+        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${bajo ? 'bg-[#fde3d3] text-[#8a3b0c]' : 'bg-[#e3f5dc] text-[var(--lp-verde-tinta)]'}`}>
+          {bajo ? `Quedan ${p.stock} · reponer` : `${p.stock} en existencia`}
         </span>
       </div>
       <p className="mt-5 text-xs font-bold uppercase tracking-[0.06em] text-[var(--lp-tinta-2)]">{p.rubro}</p>
@@ -717,29 +798,6 @@ function TarjetaProducto({ p, semilla }: { p: Producto; semilla: number }) {
         </div>
       </div>
     </li>
-  )
-}
-
-function ColDinero({ t, d }: { t: string; d: string }) {
-  return (
-    <div>
-      <h3 className="lp-display text-2xl" style={{ fontStretch: '112%' }}>
-        {t}
-      </h3>
-      <p className="mt-3 max-w-sm text-[var(--lp-claro-2)]">{d}</p>
-    </div>
-  )
-}
-
-function Aviso({ icono, t, d }: { icono: ReactNode; t: string; d: string }) {
-  return (
-    <div className="flex items-start gap-4 rounded-2xl bg-[var(--lp-grafito-2)] p-5">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--lp-grafito-3)] text-[var(--lp-verde)]">{icono}</span>
-      <div>
-        <p className="font-semibold">{t}</p>
-        <p className="mt-1 text-sm text-[var(--lp-claro-2)]">{d}</p>
-      </div>
-    </div>
   )
 }
 
