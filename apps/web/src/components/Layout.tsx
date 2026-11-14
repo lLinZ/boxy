@@ -31,11 +31,11 @@ import {
   Receipt,
   ShieldCheck,
   ShoppingCart,
-  Store,
   Truck,
   UserRound,
   Users,
   Wallet,
+  type LucideIcon,
 } from 'lucide-react'
 import { ROL_LABEL } from '../lib/permisos'
 import { useAuth } from '../auth/AuthContext'
@@ -47,11 +47,12 @@ import type { Permiso } from '../lib/permisos'
 import { ThemeControls } from './ThemeControls'
 import { CuentaModal } from './CuentaModal'
 import type { TasaCambio } from '../types'
+import { BoxyLogo } from './BoxyLogo'
 
 interface ItemMenu {
   to: string
   label: string
-  icon: typeof Store
+  icon: LucideIcon
   permisos?: Permiso[] // cualquiera de ellos; sin permisos = todos los de la empresa
   soloSaas?: boolean
 }
@@ -146,9 +147,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const nav = (
     <>
       <div className="mb-6 flex items-center gap-3 px-1">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30">
-          <Store className="h-6 w-6" strokeWidth={2.25} />
-        </div>
+        <BoxyLogo className="h-11 w-11 shrink-0" />
         <div className="min-w-0">
           <h1 className="font-display text-xl font-bold leading-none tracking-tight">Boxy</h1>
           <p className="truncate text-tiny text-default-500">{user?.empresa?.nombre ?? user?.sucursal?.nombre ?? (user?.rol === 'super_admin' ? 'Administración' : '')}</p>

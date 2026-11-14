@@ -12,13 +12,13 @@ export default defineConfig(({ mode }) => ({
     ...(mode === 'lan' ? [basicSsl()] : []),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon-64.png', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.svg', 'favicon-64.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'Boxy — Punto de venta e inventario',
         short_name: 'Boxy',
-        description: 'Punto de venta, inventario, caja y clientes para tu negocio.',
+        description: 'Cobra en divisas y bolívares: punto de venta, inventario y control de IVA, IGTF y tasa BCV.',
         lang: 'es',
-        theme_color: '#16a34a',
+        theme_color: '#161918',
         background_color: '#0b0b0f',
         display: 'standalone',
         orientation: 'any',

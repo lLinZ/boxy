@@ -1,9 +1,10 @@
 import { Button, Card, CardBody, CardHeader, Input } from '@heroui/react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Lock, Mail, Store } from 'lucide-react'
+import { Lock, Mail } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
 import { inicioPara } from '../lib/permisos'
+import { BoxyLogo } from '../components/BoxyLogo'
 
 export function LoginPage() {
   const { login } = useAuth()
@@ -42,9 +43,7 @@ export function LoginPage() {
 
       <Card className="w-full max-w-md border border-default-200/50 bg-content1/60 p-2 backdrop-blur-2xl backdrop-saturate-150">
         <CardHeader className="flex flex-col items-center gap-2 pt-6">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30">
-            <Store className="h-7 w-7" strokeWidth={2.25} />
-          </div>
+          <BoxyLogo className="h-16 w-16" />
           <h1 className="font-display text-3xl font-bold text-primary">Boxy</h1>
           <p className="text-small text-default-500">Punto de venta, inventario y clientes para tu negocio</p>
         </CardHeader>

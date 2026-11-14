@@ -21,7 +21,6 @@ import {
   ShieldCheck,
   Smartphone,
   SprayCan,
-  Store,
   Truck,
   Wallet,
   Wheat,
@@ -29,6 +28,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { api } from '../lib/api'
+import { BoxyLogo } from '../components/BoxyLogo'
 import { useAuth } from '../auth/AuthContext'
 import { n } from '../lib/format'
 import { enlaceWhatsApp } from '../lib/whatsapp'
@@ -177,9 +177,7 @@ export function LandingPage() {
       <header className="lp-nav" data-solida={navSolida}>
         <nav className="lp-wrap flex h-16 items-center justify-between gap-4" aria-label="Principal">
           <a href="#inicio" className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[var(--lp-verde)] text-[#0c1a08]">
-              <Store className="h-5 w-5" strokeWidth={2.25} />
-            </span>
+            <BoxyLogo className="lp-logo h-10 w-10" />
             <span className="lp-display text-xl">Boxy</span>
           </a>
           <div className="hidden items-center gap-7 text-[0.92rem] font-medium lg:flex">
@@ -554,7 +552,10 @@ export function LandingPage() {
       <footer className="bg-[var(--lp-grafito)] text-[var(--lp-claro-2)]">
         <div className="lp-wrap grid gap-10 border-t border-white/10 py-12 sm:grid-cols-[1.4fr_1fr_1fr]">
           <div>
-            <p className="lp-display text-2xl text-[var(--lp-claro)]">Boxy</p>
+            <p className="flex items-center gap-2.5">
+              <BoxyLogo className="h-10 w-10" />
+              <span className="lp-display text-2xl text-[var(--lp-claro)]">Boxy</span>
+            </p>
             <p className="mt-3 max-w-xs text-sm">Punto de venta, inventario y control de caja para cualquier negocio en Venezuela.</p>
           </div>
           <ul className="space-y-1 text-sm">

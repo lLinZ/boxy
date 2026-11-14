@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /pos
+Disallow: /scanner
+
+Sitemap: https://boxy.venz.cloud/sitemap.xml

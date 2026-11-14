@@ -6,6 +6,7 @@ import axios from 'axios'
 import { api } from '../lib/api'
 import { useAuth } from '../auth/AuthContext'
 import type { User } from '../types'
+import { BoxyLogo } from '../components/BoxyLogo'
 
 export function RegistroPage() {
   const { aplicarSesion } = useAuth()
@@ -55,9 +56,7 @@ export function RegistroPage() {
 
       <Card className="w-full max-w-lg border border-default-200/50 bg-content1/60 p-2 backdrop-blur-2xl backdrop-saturate-150">
         <CardHeader className="flex flex-col items-center gap-2 pt-6">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30">
-            <Store className="h-7 w-7" strokeWidth={2.25} />
-          </div>
+          <BoxyLogo className="h-16 w-16" />
           <h1 className="font-display text-2xl font-bold text-primary">Crea tu cuenta en Boxy</h1>
           <p className="text-small text-default-500">
             14 días gratis{planCodigo ? ` · plan ${planCodigo}` : ''}. Sin tarjeta.

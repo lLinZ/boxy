@@ -967,3 +967,13 @@
 .lp-hablador .num {
   white-space: nowrap;
 }
+
+/* El logo saluda: al pasar el mouse la cajita da un saltito */
+@keyframes lp-saltito {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  40% { transform: translateY(-4px) rotate(-6deg); }
+  70% { transform: translateY(0) rotate(3deg); }
+}
+.lp a:hover > .lp-logo {
+  animation: lp-saltito 0.6s var(--lp-ease);
+}
