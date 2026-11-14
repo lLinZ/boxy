@@ -1,16 +1,17 @@
-/** Logo de Boxy: una cajita que guiña el ojo derecho. Mismo dibujo que public/favicon.svg. */
+/**
+ * Logo de Boxy: caja de cartón con tapa y cinta que guiña.
+ * Versión baldosa (caja grafito sobre verde), igual que public/favicon.svg.
+ * Masters y guía de uso: /var/www/boxy/logo-design/kit
+ */
 export function BoxyLogo({ className = 'h-9 w-9', titulo }: { className?: string; titulo?: string }) {
   return (
-    <svg viewBox="0 0 64 64" className={className} role={titulo ? 'img' : undefined} aria-label={titulo} aria-hidden={titulo ? undefined : true}>
-      <path d="M7 19 L31 19 L25 6.5 L3.5 10.5 Z" fill="#9BEA86" />
-      <path d="M33 19 L57 19 L60.5 10.5 L39 6.5 Z" fill="#9BEA86" />
-      <rect x="5" y="16" width="54" height="10" rx="3.5" fill="#4FB838" />
-      <rect x="8" y="23" width="48" height="36" rx="7" fill="#72DB5A" />
-      <rect x="8" y="23" width="48" height="5" fill="#4FB838" opacity=".55" />
-      <circle cx="23.5" cy="39" r="3.6" fill="#0C1A08" />
-      <path d="M36.5 40 Q41 34.5 45.5 40" fill="none" stroke="#0C1A08" strokeWidth="3.4" strokeLinecap="round" />
-      <path d="M23 47 Q32 55 41 46.5" fill="none" stroke="#0C1A08" strokeWidth="3.4" strokeLinecap="round" />
-      <ellipse cx="48.5" cy="45" rx="3.2" ry="2.1" fill="#FF8FB1" opacity=".75" />
+    <svg viewBox="0 0 256 256" className={className} role={titulo ? 'img' : undefined} aria-label={titulo} aria-hidden={titulo ? undefined : true}>
+      <rect width="256" height="256" rx="60" fill="#72DB5A" />
+      <path
+        fill="#161918"
+        transform="translate(23.04 21.04) scale(0.82)"
+        d="M68 32L188 32Q205.4 32 217.7 44.3Q230 56.6 230 74L230 178Q230 195.4 217.7 207.7Q205.4 220 188 220L68 220Q50.6 220 38.3 207.7Q26 195.4 26 178L26 74Q26 56.6 38.3 44.3Q50.6 32 68 32ZM210 98L46 98L46 178Q46 187.11 52.44 193.56Q58.89 200 68 200L188 200Q197.11 200 203.56 193.56Q210 187.11 210 178ZM68 52Q58.89 52 52.44 58.44Q46 64.89 46 74L46 78L118 78L118 52ZM138 78L210 78L210 74Q210 64.89 203.56 58.44Q197.11 52 188 52L138 52ZM164.89 169.24C144.23 188.92 111.77 188.92 91.11 169.24C88.52 166.78 87.44 163.12 88.28 159.65C89.12 156.18 91.75 153.42 95.18 152.41C98.61 151.4 102.31 152.3 104.9 154.76C117.84 167.08 138.16 167.08 151.1 154.76C155.1 150.95 161.43 151.11 165.24 155.11C169.05 159.1 168.89 165.43 164.89 169.24ZM137.01 127.61C141.67 118.06 151.37 112 162 112C172.63 112 182.33 118.06 186.99 127.61C189.41 132.58 187.35 138.56 182.38 140.98C177.42 143.41 171.43 141.34 169.01 136.38C167.7 133.7 164.98 132 162 132C159.02 132 156.3 133.7 154.99 136.38C152.57 141.34 146.58 143.41 141.62 140.98C136.65 138.56 134.59 132.58 137.01 127.61ZM107.5 126C107.5 133.46 101.46 139.5 94 139.5C86.54 139.5 80.5 133.46 80.5 126C80.5 118.54 86.54 112.5 94 112.5C101.46 112.5 107.5 118.54 107.5 126Z"
+      />
     </svg>
   )
 }
