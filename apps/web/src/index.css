@@ -90,3 +90,65 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
+/* ── Landing ─────────────────────────────────────────────────────────────
+   Fondo de cuadrícula que se desvanece, brillo en el color de marca,
+   texto con degradado, cinta de métodos de pago y avisos flotantes. */
+.landing-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, #000 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, #000 40%, transparent 100%);
+}
+.landing-glow {
+  background: radial-gradient(closest-side, hsl(var(--heroui-primary) / 0.28), transparent);
+  filter: blur(20px);
+}
+.landing-texto-acento {
+  background: linear-gradient(100deg, hsl(var(--heroui-primary-300)), hsl(var(--heroui-primary-500)) 55%, #d9f99d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.landing-boton {
+  transition: transform 0.18s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.landing-boton:hover {
+  transform: translateY(-1px);
+}
+.landing-boton:active {
+  transform: translateY(0) scale(0.98);
+}
+@keyframes landing-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.landing-marquee {
+  animation: landing-marquee 40s linear infinite;
+}
+.landing-marquee-mask:hover .landing-marquee {
+  animation-play-state: paused;
+}
+.landing-marquee-mask {
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+@keyframes landing-flota {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.landing-flota {
+  animation: boxy-entrada 0.8s 0.5s cubic-bezier(0.16, 1, 0.3, 1) both, landing-flota 4s 1.3s ease-in-out infinite;
+}
+.landing-flota-tarde {
+  animation-delay: 0.7s, 2.2s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-marquee,
+  .landing-flota {
+    animation: none;
+  }
+}
