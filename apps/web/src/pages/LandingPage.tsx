@@ -193,9 +193,9 @@ export function LandingPage() {
     <div className="lp min-h-screen">
       {/* ── Navegación ─────────────────────────────────────────────────── */}
       <header className="lp-nav" data-solida={navSolida}>
-        <nav className="lp-wrap flex h-16 items-center justify-between gap-4" aria-label="Principal">
+        <nav className="lp-wrap flex h-16 items-center justify-between gap-3" aria-label="Principal">
           <a href="#inicio" className="flex items-center gap-2.5">
-            <BoxyLogo className="lp-logo h-10 w-10" />
+            <BoxyLogo className="lp-logo h-9 w-9 sm:h-10 sm:w-10" />
             <span className="lp-display text-xl">Boxy</span>
           </a>
           <div className="hidden items-center gap-7 text-[0.92rem] font-medium lg:flex">
@@ -213,10 +213,12 @@ export function LandingPage() {
               </button>
             ) : (
               <>
-                <button type="button" className="lp-btn !hidden !min-h-11 !px-4 text-sm text-[var(--lp-claro-2)] hover:text-[var(--lp-claro)] sm:!inline-flex" onClick={() => navigate('/login')}>
-                  Iniciar sesión
+                {/* En el teléfono va como píldora con borde para que se vea junto a "Prueba gratis" */}
+                <button type="button" className="lp-btn lp-btn-ingresar !min-h-11 text-sm" onClick={() => navigate('/login')}>
+                  <span className="sm:hidden">Entrar</span>
+                  <span className="hidden sm:inline">Iniciar sesión</span>
                 </button>
-                <button type="button" className="lp-btn lp-btn-verde !min-h-11 !px-4 text-sm" onClick={() => empezar()}>
+                <button type="button" className="lp-btn lp-btn-verde !min-h-11 !px-3.5 text-sm sm:!px-4" onClick={() => empezar()}>
                   {registroAbierto ? 'Prueba gratis' : 'Contactar'}
                 </button>
               </>
