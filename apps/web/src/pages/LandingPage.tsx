@@ -624,14 +624,14 @@ function EscenaGaveta() {
                 <div key={c.src} className="lp-celda">
                   <div className="lp-fajo">
                     {[2, 1, 0].map((k) => (
-                      <img
+                      // La capa mide lo mismo que la celda: el desplazamiento del fajo es relativo a la celda.
+                      <span
                         key={k}
-                        src={c.src}
-                        alt=""
-                        decoding="async"
-                        className={c.horizontal ? 'lp-billete-h' : 'lp-billete-v'}
+                        className="lp-capa"
                         style={{ '--dx': `${k * 4}%`, '--dy': `${-k * 2.5}%`, '--rot': `${k ? (k % 2 ? -2.5 : 1.5) : 0}deg` } as CSSProperties}
-                      />
+                      >
+                        <img src={c.src} alt="" decoding="async" className={c.horizontal ? 'lp-billete-h' : 'lp-billete-v'} />
+                      </span>
                     ))}
                   </div>
                 </div>
