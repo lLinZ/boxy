@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useState, type ReactNode } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { ConFuncion } from './components/MejorarPlan'
 import { useAuth } from './auth/AuthContext'
 import { api } from './lib/api'
 import { inicioPara, type Permiso } from './lib/permisos'
@@ -72,7 +73,7 @@ export default function App() {
               <Layout>
                 <Routes>
                   <Route path="/dashboard" element={<Con permisos={['reportes.ver']}><DashboardPage /></Con>} />
-                  <Route path="/monitor" element={<Con permisos={['reportes.ver']}><MonitorPage /></Con>} />
+                  <Route path="/monitor" element={<Con permisos={['reportes.ver']}><ConFuncion funcion="monitor"><MonitorPage /></ConFuncion></Con>} />
                   <Route path="/pos" element={<Con permisos={['ventas.crear']}><PosPage /></Con>} />
                   <Route path="/caja" element={<Con permisos={['caja.operar']}><CajaPage /></Con>} />
                   <Route path="/inventario" element={<InventarioPage />} />
@@ -81,7 +82,7 @@ export default function App() {
                   <Route path="/ventas" element={<Con permisos={['ventas.crear', 'ventas.ver_todas']}><VentasPage /></Con>} />
                   <Route path="/compras" element={<Con permisos={['compras.gestionar']}><ComprasPage /></Con>} />
                   <Route path="/promociones" element={<Con permisos={['promociones.gestionar']}><PromocionesPage /></Con>} />
-                  <Route path="/analisis" element={<Con permisos={['reportes.ver']}><AnalisisPage /></Con>} />
+                  <Route path="/analisis" element={<Con permisos={['reportes.ver']}><ConFuncion funcion="analisis"><AnalisisPage /></ConFuncion></Con>} />
                   <Route path="/tasas" element={<TasasPage />} />
                   <Route path="/usuarios" element={<Con permisos={['usuarios.gestionar']}><UsuariosPage /></Con>} />
                   <Route path="/empresa" element={<Con permisos={['empresa.configurar']}><EmpresaPage /></Con>} />

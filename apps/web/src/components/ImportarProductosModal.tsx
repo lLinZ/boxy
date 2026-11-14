@@ -16,7 +16,8 @@ import {
 import { useRef, useState } from 'react'
 import { Download, FileSpreadsheet, Upload } from 'lucide-react'
 import * as XLSX from 'xlsx'
-import { api } from '../lib/api'
+import { api, mensajeError } from '../lib/api'
+import { useAuth } from '../auth/AuthContext'
 import { usd } from '../lib/format'
 import type { FilaImport, ImportResult, TipoIva } from '../types'
 
@@ -27,42 +28,53 @@ interface Props {
   onImported: () => void
 }
 
-// Mapeo flexible de encabezados del Excel → campo interno.
-const HEADER_MAP: Record<string, keyof FilaImport> = {
-  sku: 'sku',
-  codigo: 'sku',
-  nombre: 'nombre',
-  producto: 'nombre',
-  descripcion: 'nombre',
-  precio: 'precio_venta_usd',
-  precio_venta: 'precio_venta_usd',
-  precio_venta_usd: 'precio_venta_usd',
-  pvp: 'precio_venta_usd',
-  costo: 'precio_costo_usd',
-  precio_costo: 'precio_costo_usd',
-  precio_costo_usd: 'precio_costo_usd',
-  iva: 'tipo_iva',
-  tipo_iva: 'tipo_iva',
-  categoria: 'categoria',
-  codigo_barra: 'codigo_barra',
-  codigo_de_barras: 'codigo_barra',
-  barra: 'codigo_barra',
-  ean: 'codigo_barra',
-  unidad: 'unidad',
-  stock: 'stock_inicial',
-  stock_inicial: 'stock_inicial',
-  existencia: 'stock_inicial',
-  stock_minimo: 'stock_minimo',
-  minimo: 'stock_minimo',
+// Reconoce el encabezado de una columna aunque no use el nombre exacto de la
+// plantilla ("Precio $", "Existencia", "Código de barras", "Descripción"…).
+// El orden importa: "precio de costo" es costo y "código de barras" no es el SKU.
+const normalizar = (t: string) =>
+  t
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9$]+/g, ' ')
+    .trim()
+
+function campoDeEncabezado(encabezado: string): keyof FilaImport | null {
+  const h = normalizar(encabezado)
+  if (!h) return null
+  const tiene = (...p: string[]) => p.some((x) => h.includes(x))
+  if (tiene('barra', 'ean', 'upc')) return 'codigo_barra'
+  if (tiene('minim', 'reorden')) return 'stock_minimo'
+  if (tiene('costo', 'compra')) return 'precio_costo_usd'
+  // Un precio en bolívares no se importa: en Boxy el precio es en dólares y el Bs se calcula.
+  if (tiene('precio', 'pvp', 'venta', 'usd', 'dolar', '$') && !/\b(bs|ves|bolivar)/.test(h)) return 'precio_venta_usd'
+  if (tiene('iva', 'impuesto', 'alicuota')) return 'tipo_iva'
+  if (tiene('stock', 'existencia', 'cantidad', 'inventario', 'disponible') || h === 'cant') return 'stock_inicial'
+  if (tiene('categ', 'departamento', 'rubro', 'familia', 'linea', 'grupo')) return 'categoria'
+  if (tiene('unidad', 'medida') || h === 'um') return 'unidad'
+  if (tiene('sku', 'codigo', 'referencia') || ['cod', 'ref', 'item', 'id'].includes(h)) return 'sku'
+  if (tiene('nombre', 'producto', 'descripcion', 'articulo', 'detalle')) return 'nombre'
+  return null
 }
 
-const normalizar = (s: string) =>
-  s
-    .toLowerCase()
-    .trim()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[\s.-]+/g, '_')
+/** Número de una celda: acepta "1,10", "1.234,56", "$ 12.90", "1,234.56". */
+function leerNumero(v: unknown): number | undefined {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : undefined
+  let t = String(v ?? '').replace(/[^\d.,-]/g, '')
+  if (!t) return undefined
+  const coma = t.lastIndexOf(','), punto = t.lastIndexOf('.')
+  if (coma > -1 && punto > -1) {
+    // El separador que va de último es el decimal; el otro es de miles.
+    t = coma > punto ? t.replace(/\./g, '').replace(',', '.') : t.replace(/,/g, '')
+  } else if (coma > -1) {
+    t = t.replace(',', '.')
+  }
+  const n = Number(t)
+  return Number.isFinite(n) ? n : undefined
+}
+
+/** Tamaño de cada envío al servidor (el servidor acepta hasta 500 filas por petición). */
+const LOTE = 500
 
 function parseTipoIva(v: unknown): TipoIva | undefined {
   const s = String(v ?? '').toLowerCase()
@@ -74,6 +86,7 @@ function parseTipoIva(v: unknown): TipoIva | undefined {
 
 export function ImportarProductosModal({ isOpen, onOpenChange, onImported }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
+  const limite = useAuth().empresa?.plan?.limites.productos
   const [archivo, setArchivo] = useState('')
   const [filas, setFilas] = useState<FilaImport[]>([])
   const [errores, setErrores] = useState<string[]>([])
@@ -113,37 +126,57 @@ export function ImportarProductosModal({ isOpen, onOpenChange, onImported }: Pro
     setErrores([])
     setArchivo(file.name)
 
-    const data = await file.arrayBuffer()
-    const wb = XLSX.read(data)
-    const ws = wb.Sheets[wb.SheetNames[0]]
-    const crudo = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: '' })
+    let tabla: unknown[][]
+    try {
+      const wb = XLSX.read(await file.arrayBuffer())
+      tabla = XLSX.utils.sheet_to_json<unknown[]>(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '', blankrows: false })
+    } catch {
+      setFilas([])
+      setErrores(['No se pudo leer el archivo. Guárdalo como Excel (.xlsx) o CSV y vuelve a intentar.'])
+      return
+    }
+
+    // El encabezado puede no estar en la primera fila (títulos, logo, fecha…):
+    // se toma la primera fila, de las 15 primeras, que tenga nombre y precio.
+    let filaEncabezado = -1
+    let columnas: (keyof FilaImport | null)[] = []
+    for (let i = 0; i < Math.min(15, tabla.length); i++) {
+      const cols = tabla[i].map((c) => campoDeEncabezado(String(c ?? '')))
+      if (cols.includes('nombre') && cols.includes('precio_venta_usd')) {
+        filaEncabezado = i
+        // Si dos columnas caen en el mismo campo, vale la primera.
+        columnas = cols.map((c, j) => (c && cols.indexOf(c) === j ? c : null))
+        break
+      }
+    }
+    if (filaEncabezado < 0) {
+      setFilas([])
+      setErrores([
+        'No encontré las columnas de nombre y precio. Tu hoja necesita al menos una columna con el nombre del producto (ej. "Producto" o "Descripción") y otra con el precio en dólares (ej. "Precio" o "Precio $").',
+      ])
+      return
+    }
 
     const parsed: FilaImport[] = []
     const errs: string[] = []
-
-    crudo.forEach((row, i) => {
+    for (let i = filaEncabezado + 1; i < tabla.length; i++) {
       const fila: Partial<FilaImport> = {}
-      for (const [k, v] of Object.entries(row)) {
-        const campo = HEADER_MAP[normalizar(k)]
-        if (!campo || v === '') continue
+      tabla[i].forEach((v, j) => {
+        const campo = columnas[j]
+        if (!campo || v === '' || v == null) return
         if (campo === 'tipo_iva') fila.tipo_iva = parseTipoIva(v)
-        else if (
-          campo === 'precio_venta_usd' ||
-          campo === 'precio_costo_usd' ||
-          campo === 'stock_inicial' ||
-          campo === 'stock_minimo'
-        ) {
-          const num = Number(String(v).replace(',', '.'))
-          if (!Number.isNaN(num)) fila[campo] = num
+        else if (campo === 'precio_venta_usd' || campo === 'precio_costo_usd' || campo === 'stock_inicial' || campo === 'stock_minimo') {
+          const num = leerNumero(v)
+          if (num !== undefined) fila[campo] = Math.max(0, num)
         } else fila[campo] = String(v).trim()
-      }
-
-      if (!fila.sku || !fila.nombre || fila.precio_venta_usd === undefined) {
-        errs.push(`Fila ${i + 2}: faltan sku, nombre o precio_venta_usd — se omite.`)
-        return
+      })
+      if (!fila.nombre && fila.precio_venta_usd === undefined) continue // fila vacía o de totales
+      if (!fila.nombre || fila.precio_venta_usd === undefined) {
+        errs.push(`Fila ${i + 1}: le falta ${!fila.nombre ? 'el nombre' : 'el precio'}; se omite.`)
+        continue
       }
       parsed.push(fila as FilaImport)
-    })
+    }
 
     setFilas(parsed)
     setErrores(errs)
@@ -151,13 +184,19 @@ export function ImportarProductosModal({ isOpen, onOpenChange, onImported }: Pro
 
   async function importar() {
     setImportando(true)
+    const total: ImportResult = { creados: 0, actualizados: 0, errores: [] }
     try {
-      const res = await api.post<ImportResult>('/productos/importar', { productos: filas })
-      setResultado(res.data)
-      if (res.data.creados + res.data.actualizados > 0) onImported()
-    } catch {
-      setErrores((e) => [...e, 'Error del servidor al importar.'])
+      for (let desde = 0; desde < filas.length; desde += LOTE) {
+        const res = await api.post<ImportResult>('/productos/importar', { productos: filas.slice(desde, desde + LOTE) })
+        total.creados += res.data.creados
+        total.actualizados += res.data.actualizados
+        total.errores.push(...res.data.errores.map((e) => ({ ...e, fila: e.fila + desde })))
+      }
+    } catch (e) {
+      setErrores((x) => [...x, mensajeError(e, 'No se pudo completar la importación.')])
     } finally {
+      setResultado(total.creados + total.actualizados + total.errores.length > 0 ? total : null)
+      if (total.creados + total.actualizados > 0) onImported()
       setImportando(false)
     }
   }
@@ -210,10 +249,16 @@ export function ImportarProductosModal({ isOpen, onOpenChange, onImported }: Pro
               </div>
 
               <p className="text-tiny text-default-400">
-                Columnas: <b>sku, nombre, precio_venta_usd</b> (obligatorias) · categoria,
-                precio_costo_usd, tipo_iva (general/reducido/exento), codigo_barra, unidad,
-                stock_inicial, stock_minimo. Si el SKU ya existe, el producto se actualiza.
+                Sube tu Excel o CSV tal como lo tienes. Solo hacen falta una columna con el <b>nombre</b> del producto y otra
+                con el <b>precio en dólares</b>. Boxy también reconoce costo, existencia, mínimo, categoría, IVA, código de
+                barras y unidad. Si un producto ya existe (mismo código, código de barras o nombre), se actualiza.
               </p>
+              {limite?.maximo != null && (
+                <p className="text-tiny text-default-500">
+                  Tu plan permite {limite.maximo} productos activos; tienes {limite.uso}. Puedes agregar{' '}
+                  {Math.max(0, limite.maximo - limite.uso)} más.
+                </p>
+              )}
 
               {errores.length > 0 && (
                 <div className="rounded-large bg-warning-50 p-3">
@@ -239,7 +284,7 @@ export function ImportarProductosModal({ isOpen, onOpenChange, onImported }: Pro
                   <TableBody>
                     {filas.slice(0, 50).map((f, i) => (
                       <TableRow key={i}>
-                        <TableCell className="font-mono text-tiny">{f.sku}</TableCell>
+                        <TableCell className="font-mono text-tiny">{f.sku ?? f.codigo_barra ?? 'automático'}</TableCell>
                         <TableCell>{f.nombre}</TableCell>
                         <TableCell>{f.categoria ?? '—'}</TableCell>
                         <TableCell>{usd(f.precio_venta_usd)}</TableCell>

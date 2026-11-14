@@ -11,7 +11,7 @@ class PlanesSeeder extends Seeder
     public function run(): void
     {
         $planes = [
-            ['basico', 'Básico', 'Para bodegas y abastos pequeños', 15, 1, 2, 500, ['monitor' => false, 'analisis' => false, 'escaner_remoto' => true], 1],
+            ['basico', 'Básico', 'Para bodegas y abastos pequeños', 15, 1, 2, 100, ['monitor' => false, 'analisis' => false, 'escaner_remoto' => true], 1],
             ['minimarket', 'Minimarket', 'Para minimarkets con varias cajas', 25, 1, 5, 0, ['monitor' => true, 'analisis' => true, 'escaner_remoto' => true], 2],
             ['franquicia', 'Franquicia', 'Para cadenas y varias sucursales', 50, 0, 0, 0, ['monitor' => true, 'analisis' => true, 'escaner_remoto' => true], 3],
         ];

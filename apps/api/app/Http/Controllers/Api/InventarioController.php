@@ -17,16 +17,23 @@ class InventarioController extends Controller
 {
     public function __construct(private readonly StockService $stock) {}
 
-    /** Stock actual de la sucursal del usuario. */
+    /**
+     * Stock actual de una sucursal: la del usuario o, para quien ve reportes o
+     * gestiona productos (dueño/gerente), cualquiera de su empresa (?sucursal_id=).
+     * Incluye los productos activos que aún no tienen movimientos (stock 0), para
+     * que un producto recién creado aparezca en el inventario.
+     */
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
         $verCostos = $user->puede('productos.gestionar') || $user->puede('reportes.ver');
+        $sucursalId = $this->sucursalConsultada($request);
 
-        $campos = 'producto:id,nombre,sku,codigo_barra,unidad,tipo_iva,precio_venta_usd,categoria_id,imagen_path,controla_stock,pesable,codigo_balanza,activo'
-            .($verCostos ? ',precio_costo_usd' : '');
+        $columnas = ['id', 'nombre', 'sku', 'codigo_barra', 'unidad', 'tipo_iva', 'precio_venta_usd', 'categoria_id',
+            'imagen_path', 'controla_stock', 'pesable', 'codigo_balanza', 'activo', ...($verCostos ? ['precio_costo_usd'] : [])];
+        $campos = 'producto:'.implode(',', $columnas);
 
-        $query = Inventario::where('sucursal_id', $user->sucursal_id)
+        $query = Inventario::where('sucursal_id', $sucursalId)
             ->with([$campos, 'producto.categoria:id,nombre']);
 
         if ($request->boolean('bajo_minimo')) {
@@ -34,6 +41,19 @@ class InventarioController extends Controller
         }
 
         $items = $query->get();
+
+        if (! $request->boolean('bajo_minimo')) {
+            $sinFila = Producto::where('empresa_id', $user->empresa_id)
+                ->where('activo', true)
+                ->whereNotIn('id', $items->pluck('producto_id'))
+                ->with('categoria:id,nombre')
+                ->get($columnas);
+            foreach ($sinFila as $producto) {
+                $fila = new Inventario(['sucursal_id' => $sucursalId, 'producto_id' => $producto->id, 'cantidad' => 0, 'stock_minimo' => 0]);
+                $fila->setRelation('producto', $producto);
+                $items->push($fila);
+            }
+        }
 
         // Unidades vendidas por producto (últimos 30 días) → para el indicador "hot" 🔥
         $vendidos = DB::table('venta_items')
@@ -58,8 +78,9 @@ class InventarioController extends Controller
     {
         abort_unless($producto->empresa_id === $request->user()->empresa_id, 404);
 
-        $movimientos = InventarioMovimiento::where('sucursal_id', $request->user()->sucursal_id)
+        $movimientos = InventarioMovimiento::where('sucursal_id', $this->sucursalConsultada($request))
             ->where('producto_id', $producto->id)
+            ->with('user:id,name')
             ->latest('id')
             ->paginate($this->porPagina($request, 50));
 
@@ -175,5 +196,20 @@ class InventarioController extends Controller
         usort($resultado, fn ($a, $b) => $a['dias'] <=> $b['dias']);
 
         return response()->json(['dias' => $dias, 'lotes' => $resultado]);
+    }
+
+    /** Sucursal pedida (?sucursal_id=) si el usuario puede ver otras; si no, la suya. */
+    private function sucursalConsultada(Request $request): ?int
+    {
+        $user = $request->user();
+        $pedida = $request->integer('sucursal_id');
+        if ($pedida && $pedida !== $user->sucursal_id) {
+            abort_unless($user->puede('reportes.ver') || $user->puede('productos.gestionar'), 403, 'Solo puedes ver el inventario de tu sucursal.');
+            abort_unless(DB::table('sucursales')->where('id', $pedida)->where('empresa_id', $user->empresa_id)->exists(), 404);
+
+            return $pedida;
+        }
+
+        return $user->sucursal_id;
     }
 }

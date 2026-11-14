@@ -28,7 +28,7 @@ class FiscalService
     /** Método de Boxy → código de medio de pago programado en la impresora (01-24). */
     public const MEDIOS_PAGO = [
         'efectivo_bs' => '01', 'tarjeta' => '09', 'pago_movil' => '11', 'transferencia' => '12',
-        'efectivo_usd' => '20', 'zelle' => '21', 'credito' => '16', 'puntos' => '15', 'otro' => '16',
+        'efectivo_usd' => '20', 'zelle' => '21', 'usdt' => '22', 'credito' => '16', 'puntos' => '15', 'otro' => '16',
     ];
 
     /**

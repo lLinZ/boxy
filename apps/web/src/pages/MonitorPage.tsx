@@ -28,6 +28,7 @@ const METODO: Record<string, { label: string; color: string }> = {
   transferencia: { label: 'Transferencia', color: '#06b6d4' },
   tarjeta: { label: 'Tarjeta', color: '#f59e0b' },
   zelle: { label: 'Zelle', color: '#10b981' },
+  usdt: { label: 'USDT', color: '#26a17b' },
   otro: { label: 'Otro', color: '#94a3b8' },
 }
 

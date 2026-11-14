@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { api, leerError, tokenStore } from '../lib/api'
+import { limpiarDatosLocales } from '../lib/offline'
 import { puede as puedeFn, type Permiso } from '../lib/permisos'
-import type { AjustesEmpresa, EmpresaInfo, User } from '../types'
+import type { AjustesEmpresa, EmpresaInfo, FuncionPlan, User } from '../types'
 
 const USUARIO_KEY = 'boxy_usuario'
 const EMPRESA_KEY = 'boxy_empresa'
@@ -19,6 +20,8 @@ interface AuthContextValue {
   /** Vuelve a leer el usuario y la empresa (tras cambiar clave, PIN o ajustes). */
   refrescar: () => Promise<void>
   puede: (...permisos: Permiso[]) => boolean
+  /** ¿El plan contratado incluye esta función? (sin datos del plan: sí) */
+  tieneFuncion: (funcion: FuncionPlan) => boolean
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -89,6 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
       device_name: 'web',
     })
+    // Datos guardados de otra sesión (catálogo, respuestas de la API) no se mezclan con esta.
+    await limpiarDatosLocales()
     tokenStore.set(res.data.token)
     guardarUsuario(res.data.user)
     await cargarEmpresa(res.data.user)
@@ -96,20 +101,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function aplicarSesion(token: string, nuevoUser: User) {
+    void limpiarDatosLocales()
     tokenStore.set(token)
     guardarUsuario(nuevoUser)
     void cargarEmpresa(nuevoUser)
   }
 
   async function logout() {
-    try {
-      await api.post('/logout')
-    } finally {
-      tokenStore.clear()
-      guardarUsuario(null)
-      setEmpresa(null)
-      localStorage.removeItem(EMPRESA_KEY)
-    }
+    // Sin conexión el servidor no se entera, pero la sesión se cierra igual en el equipo
+    // (el token vence solo). Así "Cerrar sesión" nunca se queda colgado.
+    await api.post('/logout').catch(() => {})
+    tokenStore.clear()
+    guardarUsuario(null)
+    setEmpresa(null)
+    localStorage.removeItem(EMPRESA_KEY)
+    await limpiarDatosLocales()
   }
 
   const refrescar = useCallback(async () => {
@@ -119,10 +125,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [guardarUsuario, cargarEmpresa])
 
   const puede = useCallback((...permisos: Permiso[]) => puedeFn(user, ...permisos), [user])
+  const tieneFuncion = useCallback((f: FuncionPlan) => empresa?.plan?.funciones?.[f] ?? true, [empresa])
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, empresa, ajustes: empresa?.ajustes ?? null, login, aplicarSesion, logout, refrescar, puede }}
+      value={{ user, loading, empresa, ajustes: empresa?.ajustes ?? null, login, aplicarSesion, logout, refrescar, puede, tieneFuncion }}
     >
       {children}
     </AuthContext.Provider>

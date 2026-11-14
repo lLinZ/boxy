@@ -78,6 +78,7 @@ const METODOS: { key: MetodoPago; label: string; moneda: Moneda }[] = [
   { key: 'tarjeta', label: 'Tarjeta', moneda: 'VES' },
   { key: 'efectivo_usd', label: 'Efectivo USD', moneda: 'USD' },
   { key: 'zelle', label: 'Zelle (USD)', moneda: 'USD' },
+  { key: 'usdt', label: 'USDT', moneda: 'USD' },
   { key: 'credito', label: 'Fiado (a cuenta)', moneda: 'USD' },
   { key: 'puntos', label: 'Puntos', moneda: 'USD' },
 ]
@@ -423,7 +424,7 @@ export function PosPage() {
 
   /** Venta sin conexión: queda en la cola y se envía sola al volver la red. */
   async function guardarSinConexion(payload: Record<string, unknown> & { uuid: string }) {
-    await encolarVenta({ uuid: payload.uuid, creada_el: new Date().toISOString(), payload, total_usd: calculo.total_usd })
+    await encolarVenta({ uuid: payload.uuid, creada_el: new Date().toISOString(), payload, total_usd: calculo.total_usd, user_id: user?.id })
     const local: Venta = {
       id: 0,
       numero_factura: `PEND-${payload.uuid.slice(0, 6).toUpperCase()}`,

@@ -2,8 +2,8 @@ import { Button, Card, CardBody, CardHeader, Input } from '@heroui/react'
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Lock, Mail, Store, User as UserIcon } from 'lucide-react'
-import axios from 'axios'
-import { api } from '../lib/api'
+
+import { api, mensajeError } from '../lib/api'
 import { useAuth } from '../auth/AuthContext'
 import type { User } from '../types'
 import { BoxyLogo } from '../components/BoxyLogo'
@@ -38,10 +38,8 @@ export function RegistroPage() {
       aplicarSesion(res.data.token, res.data.user)
       navigate('/dashboard')
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        const errs = err.response?.data?.errors as Record<string, string[]> | undefined
-        setError(errs ? Object.values(errs).flat().join(' ') : 'No se pudo crear la cuenta.')
-      } else setError('No se pudo crear la cuenta.')
+      // Muestra el motivo real (correo repetido, demasiados intentos, sin conexión…).
+      setError(mensajeError(err, 'No se pudo crear la cuenta.'))
     } finally {
       setLoading(false)
     }

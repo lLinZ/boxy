@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permiso' => \App\Http\Middleware\RequierePermiso::class,
             'activo' => \App\Http\Middleware\UsuarioActivo::class,
             'empresa' => \App\Http\Middleware\RequiereEmpresa::class,
+            'plan' => \App\Http\Middleware\RequiereFuncionPlan::class,
             // Habilidades de tokens Sanctum (el token del teléfono-escáner solo puede escanear)
             'abilities' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
             'ability' => \Laravel\Sanctum\Http\Middleware\CheckForAnyAbility::class,

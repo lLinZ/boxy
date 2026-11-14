@@ -14,7 +14,7 @@ interface Negocio {
 
 const METODOS: Record<string, string> = {
   efectivo_bs: 'Efectivo Bs', efectivo_usd: 'Efectivo USD', pago_movil: 'Pago móvil', transferencia: 'Transferencia',
-  tarjeta: 'Tarjeta', zelle: 'Zelle', credito: 'Fiado', puntos: 'Puntos', otro: 'Otro', cuenta_cliente: 'A cuenta del cliente',
+  tarjeta: 'Tarjeta', zelle: 'Zelle', usdt: 'USDT', credito: 'Fiado', puntos: 'Puntos', otro: 'Otro', cuenta_cliente: 'A cuenta del cliente',
   devolucion: 'Devolución',
 }
 export const nombreMetodo = (m: string | null | undefined) => (m ? (METODOS[m] ?? m.replace(/_/g, ' ')) : '—')

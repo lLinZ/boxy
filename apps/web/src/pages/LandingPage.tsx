@@ -29,6 +29,7 @@ import {
 } from 'lucide-react'
 import { api } from '../lib/api'
 import { BoxyLogo } from '../components/BoxyLogo'
+import { BotonInstalar } from '../components/BotonInstalar'
 import { useAuth } from '../auth/AuthContext'
 import { n } from '../lib/format'
 import { enlaceWhatsApp } from '../lib/whatsapp'
@@ -48,6 +49,23 @@ interface ConfigPublica {
   modo: string
   registro_publico: boolean
   ventas?: ContactoVentas
+  /** Medios configurados para pagar la licencia (pago_movil, transferencia, usdt, binance, zelle). */
+  medios_cobro?: string[]
+}
+
+const NOMBRE_MEDIO: Record<string, string> = {
+  pago_movil: 'pago móvil',
+  transferencia: 'transferencia',
+  usdt: 'USDT',
+  binance: 'Binance Pay',
+  zelle: 'Zelle',
+}
+
+/** "pago móvil, transferencia o Zelle" con los medios que de verdad están configurados. */
+function listaMedios(medios: string[] | undefined): string {
+  const nombres = (medios ?? []).map((m) => NOMBRE_MEDIO[m]).filter(Boolean)
+  if (nombres.length === 0) return 'pago móvil'
+  return nombres.length === 1 ? nombres[0] : `${nombres.slice(0, -1).join(', ')} o ${nombres[nombres.length - 1]}`
 }
 
 /* ── Datos de ejemplo. La tasa es la BCV registrada en Boxy el 13/11/2026. ── */
@@ -110,9 +128,9 @@ const PREGUNTAS = [
   { q: '¿Sirve para mi tipo de negocio?', a: 'Si vendes productos con precio y existencia, sí: abastos, ferreterías, tiendas de ropa y calzado, de celulares, farmacias, perfumerías, repuestos y más.' },
   { q: 'Tengo todo en Excel, ¿lo pierdo?', a: 'No. Subes tu archivo de Excel y tus productos, precios y existencias pasan a Boxy. Si necesitas ayuda, te acompañamos por WhatsApp.' },
   { q: '¿Boxy emite factura fiscal?', a: 'No. Los tickets y comprobantes de Boxy son documentos no fiscales. Si tu negocio necesita factura fiscal, Boxy se conecta a una impresora fiscal homologada como ampliación opcional.' },
-  { q: '¿Qué pasa si se va el internet?', a: 'Sigues vendiendo. Las ventas se guardan en el equipo y se envían solas cuando vuelve la conexión.' },
-  { q: '¿Necesito comprar equipos?', a: 'No. Funciona en el navegador de la computadora, tablet o teléfono que ya tienes, y se instala como app. Sirve cualquier impresora térmica de 58 u 80 mm.' },
-  { q: '¿Cómo pago la mensualidad?', a: 'Por pago móvil, transferencia, USDT o Zelle. Reportas el pago desde el sistema y tu licencia se extiende al confirmarlo.' },
+  { q: '¿Qué pasa si se va el internet?', a: 'Sigues vendiendo. Las ventas se guardan en el equipo y se envían solas cuando vuelve la conexión. También puedes consultar tu inventario, clientes y ventas con los últimos datos que se cargaron.' },
+  { q: '¿Necesito comprar equipos?', a: 'No. Funciona en el navegador de la computadora, tablet o teléfono que ya tienes, y se instala como app desde el botón "Instalar app". Sirve cualquier impresora térmica de 58 u 80 mm.' },
+  { q: '¿Cómo pago la mensualidad?', a: 'Por MEDIOS. Reportas el pago desde el sistema y tu licencia se extiende al confirmarlo.' },
 ]
 
 const WA_PATH =
@@ -188,6 +206,7 @@ export function LandingPage() {
             <a className="lp-enlace" href="#contacto">Asesoría</a>
           </div>
           <div className="flex items-center gap-2">
+            <BotonInstalar className="hidden sm:flex" />
             {user ? (
               <button type="button" className="lp-btn lp-btn-verde !min-h-11 !px-4 text-sm" onClick={() => navigate('/dashboard')}>
                 Ir al sistema <ArrowRight className="h-4 w-4" />
@@ -220,8 +239,8 @@ export function LandingPage() {
                 Cobra en divisas y bolívares <span className="lp-marca">sin enredos al cuadrar.</span>
               </h1>
               <p className="lp-entra lp-entra-2 mt-6 max-w-[34rem] text-pretty text-lg leading-relaxed text-[var(--lp-claro-2)] sm:text-xl">
-                Todo en una sola plataforma: punto de venta, inventario y control de impuestos (IVA, IGTF, BCV) operando
-                100% offline.
+                Todo en una sola plataforma: punto de venta, inventario y control de impuestos (IVA, IGTF, BCV). Se instala
+                como app y sigue vendiendo aunque se caiga el internet.
               </p>
               <div className="lp-entra lp-entra-3 mt-9 flex flex-col gap-3 sm:flex-row">
                 <button type="button" className="lp-btn lp-btn-verde" onClick={() => empezar()}>
@@ -417,8 +436,8 @@ export function LandingPage() {
             <div className="grid gap-6 lg:grid-cols-2 lg:items-end">
               <h2 className="lp-h2">Un precio fijo al mes, en dólares.</h2>
               <p className="max-w-xl text-pretty text-lg text-[var(--lp-tinta-2)] lg:justify-self-end">
-                {registroAbierto ? `Los primeros ${diasPrueba} días son gratis en cualquier plan. ` : ''}Pagas por pago móvil,
-                transferencia, USDT o Zelle, y cambias de plan cuando crezcas.
+                {registroAbierto ? `Los primeros ${diasPrueba} días son gratis en cualquier plan. ` : ''}Pagas por{' '}
+                {listaMedios(config?.medios_cobro)}, y cambias de plan cuando crezcas.
               </p>
             </div>
             <div className="mt-14 grid items-stretch gap-5 md:grid-cols-3">
@@ -521,7 +540,7 @@ export function LandingPage() {
                     {p.q}
                     <Plus className="h-5 w-5" />
                   </summary>
-                  <p className="max-w-prose pb-6 text-[var(--lp-tinta-2)]">{p.a}</p>
+                  <p className="max-w-prose pb-6 text-[var(--lp-tinta-2)]">{p.a.replace('MEDIOS', listaMedios(config?.medios_cobro))}</p>
                 </details>
               ))}
             </div>

@@ -36,6 +36,8 @@ class RegistroController extends Controller
             'modo' => config('boxy.modo'),
             'registro_publico' => (bool) config('boxy.registro_publico'),
             'ventas' => (object) config('boxy.ventas', []),
+            // Medios con los que se puede pagar la licencia (solo cuáles; los datos se ven en "Mi licencia").
+            'medios_cobro' => array_keys(config('boxy.cobro', [])),
         ]);
     }
 

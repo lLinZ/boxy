@@ -34,7 +34,7 @@ class FacturacionService
 
     public const METODOS = [
         'efectivo_bs' => 'VES', 'pago_movil' => 'VES', 'transferencia' => 'VES', 'tarjeta' => 'VES',
-        'efectivo_usd' => 'USD', 'zelle' => 'USD', 'credito' => 'USD', 'puntos' => 'USD', 'otro' => null,
+        'efectivo_usd' => 'USD', 'zelle' => 'USD', 'usdt' => 'USD', 'credito' => 'USD', 'puntos' => 'USD', 'otro' => null,
     ];
 
     public const METODOS_VUELTO = ['efectivo_bs' => 'VES', 'efectivo_usd' => 'USD', 'pago_movil' => 'VES'];

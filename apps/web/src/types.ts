@@ -10,6 +10,7 @@ export type MetodoPago =
   | 'transferencia'
   | 'tarjeta'
   | 'zelle'
+  | 'usdt'
   | 'credito'
   | 'puntos'
   | 'otro'
@@ -59,6 +60,18 @@ export interface EmpresaInfo {
   empresa: Empresa & { sucursales: SucursalFull[] }
   ajustes: AjustesEmpresa
   modo: 'saas' | 'dedicado'
+  /** Límites, uso y funciones del plan (null en modo dedicado). */
+  plan?: PlanEmpresa | null
+}
+
+export type RecursoPlan = 'productos' | 'usuarios' | 'sucursales'
+export type FuncionPlan = 'monitor' | 'analisis' | 'escaner_remoto'
+
+export interface PlanEmpresa {
+  plan: string | null
+  /** maximo null = sin límite */
+  limites: Record<RecursoPlan, { maximo: number | null; uso: number }>
+  funciones: Record<FuncionPlan, boolean>
 }
 
 export interface Sucursal {
@@ -129,6 +142,8 @@ export interface Movimiento {
   cantidad_nueva: string
   observacion: string | null
   created_at: string
+  /** Quién lo hizo (null si fue automático). */
+  user?: { id: number; name: string } | null
 }
 
 // Métricas de rentabilidad por producto
@@ -163,7 +178,8 @@ export interface ImportResult {
 
 // Fila normalizada del Excel de productos
 export interface FilaImport {
-  sku: string
+  /** Opcional: si falta, el servidor busca por código de barras o nombre, o genera uno. */
+  sku?: string
   nombre: string
   precio_venta_usd: number
   precio_costo_usd?: number
