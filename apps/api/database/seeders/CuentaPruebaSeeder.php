@@ -144,6 +144,9 @@ class CuentaPruebaSeeder extends Seeder
                     'precio_venta_usd' => $venta,
                     'precio_costo_usd' => $costo,
                     'tipo_iva' => $tipoIva,
+                    // "(kg)" en el nombre = se vende por peso (acepta 0,3 kg, etc.)
+                    'pesable' => str_ends_with($nombre, '(kg)'),
+                    'unidad' => str_ends_with($nombre, '(kg)') ? 'KG' : 'UND',
                 ]);
 
                 Inventario::create([

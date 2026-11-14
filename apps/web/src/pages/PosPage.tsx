@@ -281,12 +281,15 @@ export function PosPage() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [agregarPorCodigo])
 
+  // Nunca borra la línea: si la cantidad no es válida (vacía, 0, "0.") se ignora.
+  // Para sacar un producto del carrito está el botón de papelera (quitarLinea).
   function cambiarCantidad(id: number, cantidad: number) {
-    if (!(cantidad > 0)) {
-      setCarrito((prev) => prev.filter((l) => l.producto.id !== id))
-      return
-    }
+    if (!(cantidad > 0)) return
     setCarrito((prev) => prev.map((l) => (l.producto.id === id ? { ...l, cantidad: r(cantidad, 3) } : l)))
+  }
+
+  function quitarLinea(id: number) {
+    setCarrito((prev) => prev.filter((l) => l.producto.id !== id))
   }
 
   function fijarDescuento(id: number, descuento: number) {
@@ -689,21 +692,10 @@ export function PosPage() {
                     </p>
                   </div>
                   {p.pesable ? (
-                    <Input
-                      size="sm"
-                      type="number"
-                      step="0.005"
-                      min="0"
-                      variant="bordered"
-                      aria-label="Kilos"
-                      className="w-24"
-                      endContent={<span className="text-tiny text-default-400">kg</span>}
-                      value={String(item.cantidad)}
-                      onValueChange={(v) => cambiarCantidad(p.id, Number(v))}
-                    />
+                    <CantidadKg valor={item.cantidad} onCambiar={(c) => cambiarCantidad(p.id, c)} />
                   ) : (
                     <div className="flex items-center gap-1">
-                      <Button isIconOnly size="sm" variant="flat" aria-label="Restar" onPress={() => cambiarCantidad(p.id, item.cantidad - 1)}>
+                      <Button isIconOnly size="sm" variant="flat" aria-label="Restar" isDisabled={item.cantidad <= 1} onPress={() => cambiarCantidad(p.id, item.cantidad - 1)}>
                         <Minus className="h-4 w-4" />
                       </Button>
                       <span className="w-8 text-center text-small font-semibold">{item.cantidad}</span>
@@ -714,6 +706,9 @@ export function PosPage() {
                   )}
                   <DescuentoLinea bruto={l.bruto_usd} valor={item.descuento_usd ?? 0} onCambiar={(d) => fijarDescuento(p.id, d)} />
                   <span className="w-16 text-right text-small font-semibold">{usd(l.total_usd)}</span>
+                  <Button isIconOnly size="sm" variant="light" color="danger" aria-label={`Quitar ${p.nombre}`} onPress={() => quitarLinea(p.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               )
             })}
@@ -1032,5 +1027,44 @@ function BtnCopiar({ texto }: { texto: string }) {
         {copiado ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
       </button>
     </Tooltip>
+  )
+}
+
+/**
+ * Campo de kilos para productos pesables. Guarda el texto que escribe el cajero
+ * (puede quedar vacío o en "0." mientras escribe) y solo avisa cantidades > 0.
+ * Acepta coma o punto decimal. Al salir del campo, si quedó inválido, vuelve al valor anterior.
+ */
+function CantidadKg({ valor, onCambiar }: { valor: number; onCambiar: (cantidad: number) => void }) {
+  const [texto, setTexto] = useState(String(valor))
+  const [editando, setEditando] = useState(false)
+  const aNumero = (t: string) => Number(t.replace(',', '.'))
+
+  return (
+    <Input
+      size="sm"
+      type="text"
+      inputMode="decimal"
+      variant="bordered"
+      aria-label="Kilos"
+      className="w-24"
+      endContent={<span className="text-tiny text-default-400">kg</span>}
+      value={editando ? texto : String(valor)}
+      onFocus={(e) => {
+        setTexto(String(valor))
+        setEditando(true)
+        ;(e.target as HTMLInputElement).select()
+      }}
+      onBlur={() => setEditando(false)}
+      onValueChange={(v) => {
+        if (!/^\d*[.,]?\d{0,3}$/.test(v)) return
+        setTexto(v)
+        const c = aNumero(v)
+        if (c > 0) onCambiar(c)
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+      }}
+    />
   )
 }
